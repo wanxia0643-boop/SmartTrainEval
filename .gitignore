@@ -1,0 +1,14 @@
+# Dependency and build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.npm-cache/
+
+# Local design-QA capture artifacts
+frontend/qa-*.png
+frontend/design-qa.md
+frontend/AGENTS.md
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/

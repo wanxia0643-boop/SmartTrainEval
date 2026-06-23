@@ -4,6 +4,7 @@ import * as echarts from 'echarts'
 import { ArrowRight, Bell, CircleCheck, DocumentChecked, Histogram, Timer, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../../stores/user'
+import TeacherDashboard from './TeacherDashboard.vue'
 
 const userStore = useUserStore()
 const trendElement = ref()
@@ -43,6 +44,7 @@ const queue = [
 const activeTab = ref('all')
 
 function initCharts() {
+  if (userStore.role === 'teacher') return
   trendChart?.dispose(); abilityChart?.dispose()
   trendChart = echarts.init(trendElement.value)
   abilityChart = echarts.init(abilityElement.value)
@@ -75,7 +77,8 @@ watch(() => userStore.role, () => nextTick(initCharts))
 </script>
 
 <template>
-  <section class="dashboard-page">
+  <TeacherDashboard v-if="userStore.role === 'teacher'" />
+  <section v-else class="dashboard-page">
     <div class="dashboard-hero">
       <div>
         <p class="page-eyebrow">{{ copy.role }}</p>

@@ -1,5 +1,12 @@
 """FastAPI 应用入口。"""
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
+
+# 确保 backend 目录在 sys.path 中，支持在 PyCharm 直接右键运行本文件
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,3 +61,15 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    # 便于在 PyCharm 中直接右键运行本文件启动（工作目录需为 backend）
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.debug,
+    )

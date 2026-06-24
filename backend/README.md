@@ -107,7 +107,7 @@ alembic downgrade -1   # 回退一个版本
 建表完成后写入种子数据：
 ```bash
 python -m scripts.init_db
-# 默认管理员账号：admin / admin123
+# 演示账号（密码均为 123456）：student / teacher / enterprise / admin
 ```
 > `init_db.py` 仍保留 `create_all` 作为兜底，但生产建议以 Alembic 管理表结构。
 

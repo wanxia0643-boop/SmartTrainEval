@@ -23,3 +23,4 @@ class CurrentUser(BaseModel):
     user_id: int
     username: str
     role_code: str
+    real_name: str = ""

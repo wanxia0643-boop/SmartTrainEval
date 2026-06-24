@@ -26,7 +26,11 @@ class AuthService:
 
         token = create_access_token(
             subject=user.id,
-            extra_claims={"username": user.username, "role_code": role_code},
+            extra_claims={
+                "username": user.username,
+                "role_code": role_code,
+                "real_name": user.real_name,
+            },
         )
 
         # 记录最后登录时间

@@ -11,6 +11,7 @@ from app.routers import (
     org,
     project,
     report,
+    role,
     user,
 )
 
@@ -18,6 +19,7 @@ from app.routers import (
 api_router = APIRouter()
 api_router.include_router(auth.router)
 api_router.include_router(user.router)
+api_router.include_router(role.router)
 api_router.include_router(org.router)
 api_router.include_router(project.router)
 api_router.include_router(achievement.router)

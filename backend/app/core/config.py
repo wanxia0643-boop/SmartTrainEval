@@ -1,7 +1,10 @@
 """全局配置：从环境变量 / .env 读取并集中管理。"""
 from functools import lru_cache
+from urllib.parse import quote_plus
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.utils.crypto import decrypt_secret
 
 
 class Settings(BaseSettings):
@@ -24,9 +27,12 @@ class Settings(BaseSettings):
     db_host: str = "127.0.0.1"
     db_port: int = 3306
     db_user: str = "beyond"
-    db_password: str = "7454088"
+    db_password: str = ""  # 支持 ENC(...) 密文，运行期用 config_enc_key 解密
     db_name: str = "smart_train_eval"
     db_echo: bool = False
+
+    # 配置加密密钥（仅存于本地 .env / 环境变量，切勿提交）
+    config_enc_key: str = ""
 
     # JWT
     jwt_secret_key: str = "please-change-this-secret-key"
@@ -42,9 +48,14 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        """SQLAlchemy + PyMySQL 连接串。"""
+        """SQLAlchemy + PyMySQL 连接串。
+
+        db_password 支持 ``ENC(...)`` 密文，运行期自动解密；
+        密码做 URL 编码，兼容含特殊字符的密码。
+        """
+        password = decrypt_secret(self.db_password, self.config_enc_key)
         return (
-            f"mysql+pymysql://{self.db_user}:{self.db_password}"
+            f"mysql+pymysql://{quote_plus(self.db_user)}:{quote_plus(password)}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}?charset=utf8mb4"
         )
 

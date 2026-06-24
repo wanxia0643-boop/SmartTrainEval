@@ -69,6 +69,18 @@ pip install -r requirements.txt
 cp .env.example .env   # Windows: copy .env.example .env
 # 修改 .env 中的数据库连接、JWT_SECRET_KEY、LLM_API_KEY
 ```
+
+**数据库密码加密（ENC 密文）**：密码以 `ENC(...)` 密文存放，运行期用
+`CONFIG_ENC_KEY` 自动解密。生成方式：
+```bash
+python -m scripts.encrypt_secret 你的数据库密码
+# 输出示例：
+#   CONFIG_ENC_KEY=ly2S...c53M=
+#   DB_PASSWORD=ENC(gAAAA...==)
+```
+把这两行写入本地 `.env`。`CONFIG_ENC_KEY` 是解密密钥，**只放本地、不要提交**。
+> 兼容明文：`DB_PASSWORD` 不以 `ENC(` 开头时按明文处理（不推荐）。
+
 先在 MySQL 中创建数据库（或执行项目根目录 `sql/smart_train_eval.sql`）：
 ```sql
 CREATE DATABASE smart_train_eval DEFAULT CHARACTER SET utf8mb4;

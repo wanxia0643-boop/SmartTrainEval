@@ -31,12 +31,14 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
 def list_users(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
+    role_id: int | None = Query(None, description="按角色ID过滤"),
     db: Session = Depends(get_db),
     _: CurrentUser = Depends(require_roles(RoleCode.TEACHER, RoleCode.ADMIN)),
 ):
     offset = (page - 1) * page_size
-    items = user_service.list(db, offset=offset, limit=page_size)
-    total = user_service.count(db)
+    filters = {"role_id": role_id} if role_id is not None else {}
+    items = user_service.list(db, offset=offset, limit=page_size, **filters)
+    total = user_service.count(db, **filters)
     return success(
         data={
             "total": total,

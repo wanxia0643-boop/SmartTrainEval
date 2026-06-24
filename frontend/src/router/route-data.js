@@ -8,6 +8,9 @@ import Profile from '../views/profile/index.vue'
 import UserManagement from '../views/admin/UserManagement.vue'
 import OrgManagement from '../views/admin/OrgManagement.vue'
 import TrainingManagement from '../views/teacher/TrainingManagement.vue'
+import StudentArchive from '../views/teacher/StudentArchive.vue'
+import IntelligentEvaluation from '../views/teacher/IntelligentEvaluation.vue'
+import DataReport from '../views/teacher/DataReport.vue'
 
 export const roleLabels = {
   student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
@@ -39,9 +42,18 @@ export const protectedRoutes = [
     path: 'training-management', name: 'training-management', component: TrainingManagement,
     meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher'] },
   },
-  feature('intelligent-evaluation', '智能评价', DocumentChecked, ['teacher'], '快速处理 AI 初评后的人工复核任务。'),
-  feature('student-archive', '学生档案', UserFilled, ['teacher'], '查看学生能力证据与成长变化。'),
-  feature('data-report', '数据报表', DataAnalysis, ['teacher', 'admin'], '分析评价进度、能力分布与质量趋势。'),
+  {
+    path: 'intelligent-evaluation', name: 'intelligent-evaluation', component: IntelligentEvaluation,
+    meta: { title: '智能评价', icon: DocumentChecked, roles: ['teacher'] },
+  },
+  {
+    path: 'student-archive', name: 'student-archive', component: StudentArchive,
+    meta: { title: '学生档案', icon: UserFilled, roles: ['teacher'] },
+  },
+  {
+    path: 'data-report', name: 'data-report', component: DataReport,
+    meta: { title: '数据报表', icon: DataAnalysis, roles: ['teacher', 'admin'] },
+  },
   feature('project-training', '项目实训', Briefcase, ['enterprise'], '跟进企业项目中的实训进度与实践产出。'),
   feature('talent-evaluation', '人才评价', DocumentChecked, ['enterprise'], '筛选实训表现，形成企业人才评价。'),
   feature('enterprise-mentor', '企业导师', UserFilled, ['enterprise'], '协同企业导师处理指导与反馈事项。'),

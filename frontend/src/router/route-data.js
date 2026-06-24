@@ -6,6 +6,7 @@ import Dashboard from '../views/dashboard/index.vue'
 import FeatureView from '../views/common/FeatureView.vue'
 import Profile from '../views/profile/index.vue'
 import UserManagement from '../views/admin/UserManagement.vue'
+import OrgManagement from '../views/admin/OrgManagement.vue'
 
 export const roleLabels = {
   student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
@@ -41,7 +42,10 @@ export const protectedRoutes = [
   feature('talent-evaluation', '人才评价', DocumentChecked, ['enterprise'], '筛选实训表现，形成企业人才评价。'),
   feature('enterprise-mentor', '企业导师', UserFilled, ['enterprise'], '协同企业导师处理指导与反馈事项。'),
   feature('partner-schools', '合作院校', School, ['enterprise'], '维护合作院校与实训项目关系。'),
-  feature('organization', '组织架构', OfficeBuilding, ['admin'], '配置院校、企业、院系与班级层级。'),
+  {
+    path: 'organization', name: 'organization', component: OrgManagement,
+    meta: { title: '组织架构', icon: OfficeBuilding, roles: ['admin'] },
+  },
   {
     path: 'user-management', name: 'user-management', component: UserManagement,
     meta: { title: '用户管理', icon: User, roles: ['admin'] },

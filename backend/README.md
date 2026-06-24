@@ -175,9 +175,32 @@ def create_xxx(): ...
 
 ## AI 模块
 
-`app/ai/evaluator.py` 中 `AIEvaluator` 预留三个入口（当前抛 `NotImplementedError`）：
-- `parse_file()`：成果文件解析
-- `check_code()`：代码核查
-- `evaluate()`：智能评价
+`app/ai/evaluator.py` 中 `AIEvaluator`：
+- `review()`：**已实现** —— 实训成果智能核查（功能/逻辑/步骤/规范四维），基于 LangChain 调用大模型并解析为结构化结果
+- `parse_file()` / `check_code()` / `evaluate()`：预留入口（当前抛 `NotImplementedError`）
 
-LLM 实例统一由 `app/ai/llm.py::get_llm()` 构建，便于切换模型厂商。
+LLM 实例统一由 `app/ai/llm.py::get_llm()` 构建，提示词在 `app/ai/prompts.py`，
+结果 schema 在 `app/schemas/ai_review.py`。
+
+### 智能核查接口
+
+`POST /api/v1/ai/review`（教师 / 企业导师 / 管理员）
+
+请求：
+```json
+{ "training_requirement": "实训要求...", "student_content": "代码/文档...", "achievement_id": 1 }
+```
+返回 `data` 为结构化核查结果：
+```json
+{
+  "function_check": { "is_complete": false, "problem_list": ["..."] },
+  "logic_check":    { "has_risk": true, "risk_list": ["..."] },
+  "step_check":     { "is_complete": true, "missing_steps": [] },
+  "standard_score": 82,
+  "standard_suggestion": "...",
+  "summary": "..."
+}
+```
+- 模型输出兼容 ```json 代码块包裹，自动提取并按 schema 校验；
+- 每次调用（成功/失败）均记录到 `llm_call_log`（含 token 数、耗时）。
+- 需在 `.env` 配置 `LLM_API_KEY`（及可选 `LLM_BASE_URL` / `LLM_MODEL`）。

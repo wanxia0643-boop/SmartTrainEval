@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 from app.routers import (
     achievement,
+    ai,
     auth,
     eval_result,
     indicator,
@@ -24,5 +25,6 @@ api_router.include_router(indicator.router)
 api_router.include_router(eval_result.router)
 api_router.include_router(llm_log.router)
 api_router.include_router(report.router)
+api_router.include_router(ai.router)
 
 __all__ = ["api_router"]

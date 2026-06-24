@@ -28,6 +28,8 @@ export async function login({ account, password }) {
   return {
     token,
     role,
+    userId: me.user_id,
+    username: me.username,
     name: me.real_name || me.username,
     department: '',
   }

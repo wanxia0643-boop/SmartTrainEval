@@ -8,6 +8,8 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     token: '',
     role: '',
+    userId: null,
+    username: '',
     name: '',
     department: '',
     initialized: false,
@@ -26,7 +28,8 @@ export const useUserStore = defineStore('user', {
     },
     persist() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        token: this.token, role: this.role, name: this.name, department: this.department,
+        token: this.token, role: this.role, userId: this.userId,
+        username: this.username, name: this.name, department: this.department,
       }))
     },
     async login(payload) {
@@ -36,7 +39,7 @@ export const useUserStore = defineStore('user', {
       return session
     },
     logout() {
-      this.$patch({ token: '', role: '', name: '', department: '' })
+      this.$patch({ token: '', role: '', userId: null, username: '', name: '', department: '' })
       localStorage.removeItem(STORAGE_KEY)
       resetRoleRoutes()
     },

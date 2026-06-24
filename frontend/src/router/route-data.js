@@ -7,6 +7,7 @@ import FeatureView from '../views/common/FeatureView.vue'
 import Profile from '../views/profile/index.vue'
 import UserManagement from '../views/admin/UserManagement.vue'
 import OrgManagement from '../views/admin/OrgManagement.vue'
+import TrainingManagement from '../views/teacher/TrainingManagement.vue'
 
 export const roleLabels = {
   student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
@@ -34,7 +35,10 @@ export const protectedRoutes = [
   feature('training', '实训中心', Reading, ['student'], '集中管理实训课程、项目与学习资源。'),
   feature('my-evaluation', '评价反馈', DocumentChecked, ['student'], '查看导师、同伴与 AI 评价的完整反馈。'),
   feature('growth', '成长档案', CollectionTag, ['student'], '沉淀能力图谱、学习轨迹与荣誉成果。'),
-  feature('training-management', '实训管理', FolderChecked, ['teacher'], '管理实训项目、班级安排与阶段任务。'),
+  {
+    path: 'training-management', name: 'training-management', component: TrainingManagement,
+    meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher'] },
+  },
   feature('intelligent-evaluation', '智能评价', DocumentChecked, ['teacher'], '快速处理 AI 初评后的人工复核任务。'),
   feature('student-archive', '学生档案', UserFilled, ['teacher'], '查看学生能力证据与成长变化。'),
   feature('data-report', '数据报表', DataAnalysis, ['teacher', 'admin'], '分析评价进度、能力分布与质量趋势。'),

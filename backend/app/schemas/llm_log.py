@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class LlmLogCreate(BaseModel):
+    # model_name 字段与 Pydantic 保留前缀 model_ 冲突，显式放开
+    model_config = ConfigDict(protected_namespaces=())
+
     user_id: int | None = None
     biz_type: str | None = Field(default=None, max_length=50)
     biz_id: int | None = None
@@ -23,7 +26,7 @@ class LlmLogCreate(BaseModel):
 
 
 class LlmLogOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
     id: int
     user_id: int | None

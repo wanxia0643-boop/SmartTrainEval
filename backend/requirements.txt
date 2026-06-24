@@ -1,0 +1,35 @@
+# ============================================================
+# 软件实训评价系统 后端依赖
+# Python 3.10+  /  pip install -r requirements.txt
+# ============================================================
+
+# --- Web 框架 ---
+fastapi==0.111.0              # 高性能异步 Web 框架，提供路由、依赖注入、OpenAPI 文档
+uvicorn[standard]==0.30.1    # ASGI 服务器，用于运行 FastAPI（standard 含 websockets/uvloop/httptools）
+
+# --- 数据库 ORM ---
+SQLAlchemy==2.0.30           # ORM 框架，使用 2.0 新式 Mapped 声明风格
+PyMySQL==1.1.1               # 纯 Python 实现的 MySQL 驱动，供 SQLAlchemy 连接 MySQL 8.0
+cryptography==42.0.8         # PyMySQL 连接 MySQL 8.0 caching_sha2_password 认证所需
+alembic==1.16.4              # 数据库迁移工具，基于 SQLAlchemy 管理表结构版本
+
+# --- 数据校验 / 配置 ---
+pydantic==2.7.4              # 数据校验与序列化（FastAPI 内置依赖，显式锁定版本）
+pydantic-settings==2.3.4     # 基于 pydantic 的配置管理，从 .env 读取环境变量
+email-validator==2.2.0       # pydantic EmailStr 邮箱格式校验所需
+
+# --- 认证 / 安全 ---
+python-jose[cryptography]==3.3.0  # JWT 令牌的生成与校验
+passlib[bcrypt]==1.7.4            # 密码哈希（BCrypt），用于用户密码加密存储
+python-multipart==0.0.9           # 解析 form-data，OAuth2 登录表单与文件上传所需
+
+# --- 大模型 / LangChain ---
+langchain==0.2.6             # 大模型应用编排框架（链、提示词、工具）
+langchain-core==0.2.11       # LangChain 核心抽象（Runnable、消息、提示词模板）
+langchain-community==0.2.6   # 社区集成（文档加载器、向量库等，供文件解析使用）
+langchain-openai==0.1.14     # OpenAI 兼容大模型接入（按需替换为其他厂商）
+
+# --- 工具 ---
+loguru==0.7.2               # 简洁强大的日志库，替代标准 logging
+python-dotenv==1.0.1        # 加载 .env 文件到环境变量
+tenacity==8.4.2             # 重试库，用于大模型调用等不稳定外部请求的容错

@@ -33,7 +33,7 @@ def list_users(
     page_size: int = Query(10, ge=1, le=100),
     role_id: int | None = Query(None, description="按角色ID过滤"),
     db: Session = Depends(get_db),
-    _: CurrentUser = Depends(require_roles(RoleCode.TEACHER, RoleCode.ADMIN)),
+    _: CurrentUser = Depends(require_roles(RoleCode.TEACHER, RoleCode.ENTERPRISE, RoleCode.ADMIN)),
 ):
     offset = (page - 1) * page_size
     filters = {"role_id": role_id} if role_id is not None else {}

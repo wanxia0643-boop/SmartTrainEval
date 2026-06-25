@@ -14,6 +14,10 @@ import DataReport from '../views/teacher/DataReport.vue'
 import TrainingCenter from '../views/student/TrainingCenter.vue'
 import MyEvaluation from '../views/student/MyEvaluation.vue'
 import GrowthArchive from '../views/student/GrowthArchive.vue'
+import ProjectTraining from '../views/enterprise/ProjectTraining.vue'
+import TalentEvaluation from '../views/enterprise/TalentEvaluation.vue'
+import EnterpriseMentor from '../views/enterprise/EnterpriseMentor.vue'
+import PartnerSchools from '../views/enterprise/PartnerSchools.vue'
 
 export const roleLabels = {
   student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
@@ -66,10 +70,22 @@ export const protectedRoutes = [
     path: 'data-report', name: 'data-report', component: DataReport,
     meta: { title: '数据报表', icon: DataAnalysis, roles: ['teacher', 'admin'] },
   },
-  feature('project-training', '项目实训', Briefcase, ['enterprise'], '跟进企业项目中的实训进度与实践产出。'),
-  feature('talent-evaluation', '人才评价', DocumentChecked, ['enterprise'], '筛选实训表现，形成企业人才评价。'),
-  feature('enterprise-mentor', '企业导师', UserFilled, ['enterprise'], '协同企业导师处理指导与反馈事项。'),
-  feature('partner-schools', '合作院校', School, ['enterprise'], '维护合作院校与实训项目关系。'),
+  {
+    path: 'project-training', name: 'project-training', component: ProjectTraining,
+    meta: { title: '项目实训', icon: Briefcase, roles: ['enterprise'] },
+  },
+  {
+    path: 'talent-evaluation', name: 'talent-evaluation', component: TalentEvaluation,
+    meta: { title: '人才评价', icon: DocumentChecked, roles: ['enterprise'] },
+  },
+  {
+    path: 'enterprise-mentor', name: 'enterprise-mentor', component: EnterpriseMentor,
+    meta: { title: '企业导师', icon: UserFilled, roles: ['enterprise'] },
+  },
+  {
+    path: 'partner-schools', name: 'partner-schools', component: PartnerSchools,
+    meta: { title: '合作院校', icon: School, roles: ['enterprise'] },
+  },
   {
     path: 'organization', name: 'organization', component: OrgManagement,
     meta: { title: '组织架构', icon: OfficeBuilding, roles: ['admin'] },

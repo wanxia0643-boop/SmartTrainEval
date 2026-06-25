@@ -1,6 +1,6 @@
 import {
   Briefcase, CollectionTag, DataAnalysis, DocumentChecked, FolderChecked,
-  Monitor, OfficeBuilding, Reading, School, Setting, User, UserFilled,
+  Histogram, Monitor, OfficeBuilding, Reading, School, Setting, User, UserFilled,
 } from '@element-plus/icons-vue'
 import Dashboard from '../views/dashboard/index.vue'
 import Profile from '../views/profile/index.vue'
@@ -10,6 +10,7 @@ import TrainingManagement from '../views/teacher/TrainingManagement.vue'
 import StudentArchive from '../views/teacher/StudentArchive.vue'
 import IntelligentEvaluation from '../views/teacher/IntelligentEvaluation.vue'
 import DataReport from '../views/teacher/DataReport.vue'
+import IndicatorManagement from '../views/teacher/IndicatorManagement.vue'
 import TrainingCenter from '../views/student/TrainingCenter.vue'
 import MyEvaluation from '../views/student/MyEvaluation.vue'
 import GrowthArchive from '../views/student/GrowthArchive.vue'
@@ -52,6 +53,10 @@ export const protectedRoutes = [
   {
     path: 'training-management', name: 'training-management', component: TrainingManagement,
     meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher'] },
+  },
+  {
+    path: 'indicator-management', name: 'indicator-management', component: IndicatorManagement,
+    meta: { title: '评价指标', icon: Histogram, roles: ['teacher', 'admin'] },
   },
   {
     path: 'intelligent-evaluation', name: 'intelligent-evaluation', component: IntelligentEvaluation,

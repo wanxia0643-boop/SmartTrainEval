@@ -11,6 +11,9 @@ import TrainingManagement from '../views/teacher/TrainingManagement.vue'
 import StudentArchive from '../views/teacher/StudentArchive.vue'
 import IntelligentEvaluation from '../views/teacher/IntelligentEvaluation.vue'
 import DataReport from '../views/teacher/DataReport.vue'
+import TrainingCenter from '../views/student/TrainingCenter.vue'
+import MyEvaluation from '../views/student/MyEvaluation.vue'
+import GrowthArchive from '../views/student/GrowthArchive.vue'
 
 export const roleLabels = {
   student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
@@ -35,9 +38,18 @@ const feature = (path, title, icon, roles, description) => ({
 
 export const protectedRoutes = [
   dashboard,
-  feature('training', '实训中心', Reading, ['student'], '集中管理实训课程、项目与学习资源。'),
-  feature('my-evaluation', '评价反馈', DocumentChecked, ['student'], '查看导师、同伴与 AI 评价的完整反馈。'),
-  feature('growth', '成长档案', CollectionTag, ['student'], '沉淀能力图谱、学习轨迹与荣誉成果。'),
+  {
+    path: 'training', name: 'training', component: TrainingCenter,
+    meta: { title: '实训中心', icon: Reading, roles: ['student'] },
+  },
+  {
+    path: 'my-evaluation', name: 'my-evaluation', component: MyEvaluation,
+    meta: { title: '评价反馈', icon: DocumentChecked, roles: ['student'] },
+  },
+  {
+    path: 'growth', name: 'growth', component: GrowthArchive,
+    meta: { title: '成长档案', icon: CollectionTag, roles: ['student'] },
+  },
   {
     path: 'training-management', name: 'training-management', component: TrainingManagement,
     meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher'] },

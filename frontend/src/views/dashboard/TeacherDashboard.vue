@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   CaretBottom,
@@ -10,24 +10,91 @@ import {
   UserFilled,
 } from '@element-plus/icons-vue'
 import ResponsiveEChart from './components/ResponsiveEChart.vue'
+import { listAchievements } from '../../api/achievements'
+import { listProjects } from '../../api/projects'
+import { listUsers } from '../../api/users'
+import { listRoles } from '../../api/roles'
 
 const router = useRouter()
-const reviewRows = ref([
-  { name: '李明轩', project: '企业应用开发实训', submittedAt: '今天 09:45' },
-  { name: '王思雨', project: 'Vue 项目综合实训', submittedAt: '今天 09:12' },
-  { name: '张子豪', project: '数据库设计与优化实训', submittedAt: '昨天 17:28' },
-  { name: '刘雨桐', project: 'Python 数据分析实训', submittedAt: '昨天 16:40' },
-  { name: '陈宇航', project: '软件测试实训', submittedAt: '昨天 15:06' },
+const reviewRows = ref([])
+const scoredCount = ref(0)
+
+const metrics = ref([
+  { label: '待评审实训数', value: '—', unit: '项', comparison: '加载中', direction: 'up', icon: DocumentChecked, tone: 'blue' },
+  { label: '进行中实训项目', value: '—', unit: '个', comparison: '加载中', direction: 'up', icon: FolderOpened, tone: 'cyan' },
+  { label: '学生总数', value: '—', unit: '人', comparison: '加载中', direction: 'up', icon: UserFilled, tone: 'violet' },
+  { label: '已评价成果', value: '—', unit: '项', comparison: '加载中', direction: 'up', icon: CircleCheck, tone: 'green' },
 ])
 
-const metrics = [
-  { label: '待评审实训数', value: '36', unit: '项', comparison: '较上月 12.5%', direction: 'up', icon: DocumentChecked, tone: 'blue' },
-  { label: '进行中实训项目', value: '8', unit: '个', comparison: '较上月 2 个', direction: 'up', icon: FolderOpened, tone: 'cyan' },
-  { label: '带班学生总数', value: '126', unit: '人', comparison: '较上月 6 人', direction: 'up', icon: UserFilled, tone: 'violet' },
-  { label: '本月完成实训数', value: '58', unit: '项', comparison: '较上月 8.1%', direction: 'down', icon: CircleCheck, tone: 'green' },
-]
+function fmtTime(t) {
+  return (t || '').replace('T', ' ').slice(0, 16) || '—'
+}
 
-const submissionOption = computed(() => ({
+async function loadDashboard() {
+  const roles = await listRoles()
+  const studentRoleId = roles.find((r) => r.role_code === 'STUDENT')?.id
+  const [achRes, projRes, stuRes] = await Promise.all([
+    listAchievements({ page: 1, page_size: 100 }),
+    listProjects({ page: 1, page_size: 100 }),
+    studentRoleId ? listUsers({ role_id: studentRoleId, page: 1, page_size: 100 }) : Promise.resolve({ total: 0, items: [] }),
+  ])
+  const achs = achRes.items || []
+  const pending = achs.filter((a) => [1, 2].includes(a.status)).length
+  const evaluated = achs.filter((a) => a.status === 3).length
+  const ongoing = (projRes.items || []).filter((p) => p.status === 1).length
+
+  metrics.value = [
+    { label: '待评审实训数', value: String(pending), unit: '项', comparison: `共 ${achRes.total} 份成果`, direction: 'up', icon: DocumentChecked, tone: 'blue' },
+    { label: '进行中实训项目', value: String(ongoing), unit: '个', comparison: `共 ${projRes.total} 个项目`, direction: 'up', icon: FolderOpened, tone: 'cyan' },
+    { label: '学生总数', value: String(stuRes.total), unit: '人', comparison: '平台在册', direction: 'up', icon: UserFilled, tone: 'violet' },
+    { label: '已评价成果', value: String(evaluated), unit: '项', comparison: '评价完成', direction: 'up', icon: CircleCheck, tone: 'green' },
+  ]
+
+  // 待评审成果列表（最近提交的未完成评价成果）
+  const projMap = Object.fromEntries((projRes.items || []).map((p) => [p.id, p.project_name]))
+  const stuMap = Object.fromEntries((stuRes.items || []).map((u) => [u.id, u.real_name]))
+  reviewRows.value = achs
+    .filter((a) => [1, 2].includes(a.status))
+    .slice(0, 6)
+    .map((a) => ({
+      name: stuMap[a.student_id] || `学生#${a.student_id}`,
+      project: projMap[a.project_id] || `项目#${a.project_id}`,
+      submittedAt: fmtTime(a.submit_time || a.create_time),
+    }))
+
+  // 成绩分布（按 final_score 分档）
+  const bands = { 优秀: 0, 良好: 0, 及格: 0, 不及格: 0 }
+  for (const a of achs) {
+    if (a.final_score == null) continue
+    const s = Number(a.final_score)
+    if (s >= 85) bands.优秀++
+    else if (s >= 70) bands.良好++
+    else if (s >= 60) bands.及格++
+    else bands.不及格++
+  }
+  scoredCount.value = bands.优秀 + bands.良好 + bands.及格 + bands.不及格
+  scoreOption.value = buildScoreOption(bands)
+
+  // 近 7 天提交量（按 submit_time 分日统计）
+  const today = new Date()
+  const days = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    days.push(d)
+  }
+  const labels = days.map((d) => `${d.getMonth() + 1}/${d.getDate()}`)
+  const counts = days.map((d) => {
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return achs.filter((a) => (a.submit_time || a.create_time || '').slice(0, 10) === key).length
+  })
+  submissionOption.value = buildSubmissionOption(labels, counts)
+}
+
+onMounted(loadDashboard)
+
+function buildSubmissionOption(labels, data) {
+  return ({
   animationDuration: 260,
   animationEasing: 'cubicOut',
   tooltip: {
@@ -41,7 +108,7 @@ const submissionOption = computed(() => ({
   xAxis: {
     type: 'category',
     boundaryGap: false,
-    data: ['6/17', '6/18', '6/19', '6/20', '6/21', '6/22', '6/23'],
+    data: labels,
     axisTick: { show: false },
     axisLine: { lineStyle: { color: '#E8EDF5' } },
     axisLabel: { color: '#6F7B91', fontSize: 12, margin: 12 },
@@ -59,16 +126,18 @@ const submissionOption = computed(() => ({
     name: '提交量',
     type: 'line',
     smooth: true,
-    data: [18, 24, 21, 32, 28, 36, 42],
+    data,
     symbol: 'circle',
     symbolSize: 7,
     lineStyle: { color: '#165DFF', width: 3 },
     itemStyle: { color: '#165DFF', borderColor: '#fff', borderWidth: 2 },
     areaStyle: { color: 'rgba(22, 93, 255, 0.09)' },
   }],
-}))
+  })
+}
 
-const scoreOption = computed(() => ({
+function buildScoreOption(bands) {
+  return ({
   animationDuration: 260,
   animationEasing: 'cubicOut',
   tooltip: {
@@ -94,13 +163,17 @@ const scoreOption = computed(() => ({
     label: { show: false },
     labelLine: { show: false },
     data: [
-      { value: 35, name: '优秀', itemStyle: { color: '#165DFF' } },
-      { value: 48, name: '良好', itemStyle: { color: '#28B28B' } },
-      { value: 32, name: '及格', itemStyle: { color: '#F3B63F' } },
-      { value: 11, name: '不及格', itemStyle: { color: '#E56767' } },
+      { value: bands.优秀, name: '优秀', itemStyle: { color: '#165DFF' } },
+      { value: bands.良好, name: '良好', itemStyle: { color: '#28B28B' } },
+      { value: bands.及格, name: '及格', itemStyle: { color: '#F3B63F' } },
+      { value: bands.不及格, name: '不及格', itemStyle: { color: '#E56767' } },
     ],
   }],
-}))
+  })
+}
+
+const submissionOption = ref(buildSubmissionOption(['6/17', '6/18', '6/19', '6/20', '6/21', '6/22', '6/23'], [0, 0, 0, 0, 0, 0, 0]))
+const scoreOption = ref(buildScoreOption({ 优秀: 0, 良好: 0, 及格: 0, 不及格: 0 }))
 
 function goToReview(row) {
   router.push({ name: 'intelligent-evaluation', query: { student: row.name, project: row.project } })
@@ -137,7 +210,7 @@ function goToReview(row) {
         <ResponsiveEChart :option="submissionOption" aria-label="近七天实训提交量折线图" />
       </article>
       <article class="teacher-panel">
-        <div class="teacher-panel__heading"><div><h3>成绩分布</h3><span>本月已完成评审成果</span></div><strong>126 人</strong></div>
+        <div class="teacher-panel__heading"><div><h3>成绩分布</h3><span>已完成评审成果</span></div><strong>{{ scoredCount }} 人</strong></div>
         <ResponsiveEChart :option="scoreOption" aria-label="成绩分布饼图，包含优秀、良好、及格和不及格占比" />
       </article>
     </section>

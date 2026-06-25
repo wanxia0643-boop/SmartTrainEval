@@ -3,7 +3,6 @@ import {
   Monitor, OfficeBuilding, Reading, School, Setting, User, UserFilled,
 } from '@element-plus/icons-vue'
 import Dashboard from '../views/dashboard/index.vue'
-import FeatureView from '../views/common/FeatureView.vue'
 import Profile from '../views/profile/index.vue'
 import UserManagement from '../views/admin/UserManagement.vue'
 import OrgManagement from '../views/admin/OrgManagement.vue'
@@ -18,6 +17,7 @@ import ProjectTraining from '../views/enterprise/ProjectTraining.vue'
 import TalentEvaluation from '../views/enterprise/TalentEvaluation.vue'
 import EnterpriseMentor from '../views/enterprise/EnterpriseMentor.vue'
 import PartnerSchools from '../views/enterprise/PartnerSchools.vue'
+import SystemSettings from '../views/admin/SystemSettings.vue'
 
 export const roleLabels = {
   student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
@@ -34,11 +34,6 @@ const dashboard = {
   path: 'dashboard', name: 'dashboard', component: Dashboard,
   meta: { title: '工作台', icon: Monitor, roles: ['student', 'teacher', 'enterprise', 'admin'] },
 }
-
-const feature = (path, title, icon, roles, description) => ({
-  path, name: path, component: FeatureView, props: { title, description },
-  meta: { title, icon, roles },
-})
 
 export const protectedRoutes = [
   dashboard,
@@ -94,7 +89,10 @@ export const protectedRoutes = [
     path: 'user-management', name: 'user-management', component: UserManagement,
     meta: { title: '用户管理', icon: User, roles: ['admin'] },
   },
-  feature('system-settings', '系统设置', Setting, ['admin'], '配置评价规则、通知与系统基础参数。'),
+  {
+    path: 'system-settings', name: 'system-settings', component: SystemSettings,
+    meta: { title: '系统设置', icon: Setting, roles: ['admin'] },
+  },
   {
     path: 'profile', name: 'profile', component: Profile,
     meta: { title: '个人中心', icon: User, roles: ['student', 'teacher', 'enterprise', 'admin'], hidden: true },

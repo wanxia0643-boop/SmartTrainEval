@@ -49,74 +49,9 @@ async function submit() {
 
 <template>
   <main class="auth">
-    <!-- 高校教学体系主题背景 -->
-    <div class="auth-bg" aria-hidden="true">
-      <span class="glow glow-a"></span>
-      <span class="glow glow-b"></span>
+    <!-- 高校校园实景背景 -->
+    <div class="auth-bg" aria-hidden="true"></div>
 
-      <!-- 知识网络 -->
-      <svg class="auth-net" viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice">
-        <g stroke="rgba(255,255,255,.16)" stroke-width="1" fill="none">
-          <path d="M70 60 L180 120 L120 220 L70 60 M180 120 L300 70 L300 70 M300 70 L430 130 L380 240 M430 130 L520 70 M180 120 L240 230" />
-        </g>
-        <g fill="rgba(255,255,255,.55)">
-          <circle cx="70" cy="60" r="3.5" /><circle cx="180" cy="120" r="3" /><circle cx="300" cy="70" r="4" />
-          <circle cx="430" cy="130" r="3" /><circle cx="520" cy="70" r="3.5" /><circle cx="120" cy="220" r="3" />
-          <circle cx="240" cy="230" r="3" /><circle cx="380" cy="240" r="3.5" />
-        </g>
-      </svg>
-
-      <!-- 校园天际线 -->
-      <svg class="auth-campus" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice">
-        <g fill="#0a1c3f">
-          <!-- 左侧教学楼 -->
-          <rect x="60" y="250" width="200" height="170" />
-          <rect x="280" y="210" width="150" height="210" />
-          <!-- 右侧实训楼 -->
-          <rect x="1020" y="230" width="170" height="190" />
-          <rect x="1210" y="270" width="170" height="150" />
-        </g>
-
-        <!-- 中央主楼（古典学院建筑） -->
-        <g fill="#0c2552">
-          <rect x="560" y="200" width="320" height="220" />
-          <!-- 三角山墙 -->
-          <polygon points="540,200 720,110 900,200" />
-          <!-- 立柱门廊 -->
-          <rect x="566" y="220" width="14" height="200" />
-          <rect x="612" y="220" width="14" height="200" />
-          <rect x="658" y="220" width="14" height="200" />
-          <rect x="768" y="220" width="14" height="200" />
-          <rect x="814" y="220" width="14" height="200" />
-          <rect x="860" y="220" width="14" height="200" />
-          <!-- 钟楼 -->
-          <rect x="690" y="60" width="60" height="80" />
-          <circle cx="720" cy="55" r="34" />
-        </g>
-        <circle cx="720" cy="100" r="13" fill="#0a1c3f" />
-        <line x1="720" y1="100" x2="720" y2="90" stroke="#ffd98a" stroke-width="2" />
-        <line x1="720" y1="100" x2="728" y2="100" stroke="#ffd98a" stroke-width="2" />
-
-        <!-- 灯光窗格 -->
-        <g fill="#ffd27a" opacity=".85">
-          <rect x="90" y="280" width="16" height="22" /><rect x="124" y="280" width="16" height="22" /><rect x="158" y="280" width="16" height="22" /><rect x="192" y="280" width="16" height="22" />
-          <rect x="90" y="320" width="16" height="22" /><rect x="158" y="320" width="16" height="22" /><rect x="192" y="320" width="16" height="22" />
-          <rect x="300" y="240" width="15" height="20" /><rect x="332" y="240" width="15" height="20" /><rect x="364" y="240" width="15" height="20" /><rect x="396" y="240" width="15" height="20" />
-          <rect x="300" y="280" width="15" height="20" /><rect x="364" y="280" width="15" height="20" />
-          <rect x="1050" y="260" width="16" height="22" /><rect x="1086" y="260" width="16" height="22" /><rect x="1122" y="260" width="16" height="22" /><rect x="1158" y="260" width="16" height="22" />
-          <rect x="1050" y="300" width="16" height="22" /><rect x="1122" y="300" width="16" height="22" />
-          <rect x="1240" y="300" width="15" height="20" /><rect x="1272" y="300" width="15" height="20" /><rect x="1304" y="300" width="15" height="20" />
-          <rect x="700" y="260" width="40" height="60" opacity=".55" />
-        </g>
-      </svg>
-
-      <!-- 漂浮的教育/科技意象 -->
-      <svg class="float float-cap" viewBox="0 0 64 64"><path d="M32 14 4 26l28 12 22-9.4V42h4V26z" fill="rgba(255,255,255,.9)"/><path d="M16 34v8c0 4 7.2 7 16 7s16-3 16-7v-8l-16 6.8z" fill="rgba(255,255,255,.55)"/></svg>
-      <svg class="float float-book" viewBox="0 0 64 64"><path d="M10 14c8-3 16-3 22 1v38c-6-4-14-4-22-1z" fill="rgba(255,255,255,.85)"/><path d="M54 14c-8-3-16-3-22 1v38c6-4 14-4 22-1z" fill="rgba(255,255,255,.6)"/></svg>
-      <svg class="float float-code" viewBox="0 0 64 64"><g fill="none" stroke="rgba(255,255,255,.8)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M24 20 12 32l12 12"/><path d="M40 20l12 12-12 12"/></g></svg>
-    </div>
-
-    <!-- 内容 -->
     <div class="auth-content">
       <aside class="auth-brand">
         <div class="brand-row"><span class="brand-mark">智</span><strong>智训评</strong></div>
@@ -164,6 +99,8 @@ async function submit() {
         </el-form>
       </section>
     </div>
+
+    <p class="auth-credit">校园实景 · 上海交通大学　摄影 Ziqi CHAI · CC BY-SA 4.0 / Wikimedia Commons</p>
   </main>
 </template>
 
@@ -176,22 +113,23 @@ async function submit() {
   justify-content: center;
   padding: 32px 20px;
   overflow: hidden;
-  background: radial-gradient(120% 120% at 15% 10%, #1b3e83 0%, #102a5c 45%, #081a3d 100%);
 }
 
-/* ===== 背景层 ===== */
-.auth-bg { position: absolute; inset: 0; overflow: hidden; }
-.glow { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; }
-.glow-a { width: 460px; height: 460px; top: -120px; left: -80px; background: radial-gradient(circle, #2f6bff, transparent 70%); }
-.glow-b { width: 520px; height: 520px; bottom: -160px; right: -120px; background: radial-gradient(circle, #14b8a6, transparent 70%); opacity: .4; }
-.auth-net { position: absolute; top: 0; left: 0; width: 60%; height: 60%; opacity: .8; }
-.auth-campus { position: absolute; bottom: 0; left: 0; width: 100%; height: 46%; opacity: .92; }
-
-.float { position: absolute; width: 56px; height: 56px; opacity: .5; animation: floaty 7s ease-in-out infinite; }
-.float-cap { top: 16%; right: 18%; animation-delay: 0s; }
-.float-book { top: 60%; left: 9%; width: 46px; height: 46px; animation-delay: 1.6s; }
-.float-code { top: 30%; right: 32%; width: 44px; height: 44px; animation-delay: .8s; }
-@keyframes floaty { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-14px) rotate(3deg); } }
+/* ===== 背景：真实校园照片 + 对比遮罩 ===== */
+.auth-bg {
+  position: absolute;
+  inset: 0;
+  background: url('/login-bg.jpg') center / cover no-repeat;
+  transform: scale(1.04);
+}
+.auth-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(105deg, rgba(6, 17, 40, .9) 0%, rgba(6, 17, 40, .62) 40%, rgba(6, 17, 40, .28) 72%, rgba(6, 17, 40, .12) 100%),
+    linear-gradient(to top, rgba(6, 17, 40, .55), transparent 36%);
+}
 
 /* ===== 内容布局 ===== */
 .auth-content {
@@ -205,7 +143,7 @@ async function submit() {
   align-items: center;
 }
 
-.auth-brand { color: #eaf1ff; }
+.auth-brand { color: #eaf1ff; text-shadow: 0 2px 18px rgba(0, 0, 0, .35); }
 .brand-row { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
 .brand-mark {
   display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px;
@@ -214,19 +152,19 @@ async function submit() {
 }
 .brand-row strong { font-size: 22px; letter-spacing: .04em; }
 .auth-brand h1 { margin: 0 0 16px; font-size: 40px; line-height: 1.22; font-weight: 800; letter-spacing: -.01em; }
-.auth-brand > p { margin: 0 0 26px; max-width: 460px; color: #b8c8ea; font-size: 15px; line-height: 1.8; }
+.auth-brand > p { margin: 0 0 26px; max-width: 460px; color: #d2def6; font-size: 15px; line-height: 1.8; }
 .brand-points { list-style: none; margin: 0; padding: 0; display: grid; gap: 13px; }
-.brand-points li { display: flex; align-items: center; gap: 10px; color: #d4e0f7; font-size: 14.5px; }
-.brand-points i { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .18); }
+.brand-points li { display: flex; align-items: center; gap: 10px; color: #e3ecfb; font-size: 14.5px; }
+.brand-points i { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .2); }
 
 /* ===== 登录卡片 ===== */
 .auth-card {
-  background: rgba(255, 255, 255, .96);
+  background: rgba(255, 255, 255, .97);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, .6);
+  border: 1px solid rgba(255, 255, 255, .65);
   border-radius: 20px;
   padding: 36px 36px 30px;
-  box-shadow: 0 30px 70px rgba(8, 22, 55, .45);
+  box-shadow: 0 30px 70px rgba(4, 12, 32, .5);
 }
 .card-head { margin-bottom: 22px; }
 .card-kicker { color: #2f6bff; font-size: 12px; font-weight: 700; letter-spacing: .14em; }
@@ -251,12 +189,18 @@ async function submit() {
 }
 .demo-tip { margin: 14px 0 0; text-align: center; color: #9aa4b8; font-size: 12.5px; }
 
+.auth-credit {
+  position: absolute; right: 16px; bottom: 12px; z-index: 2; margin: 0;
+  color: rgba(255, 255, 255, .55); font-size: 11px; letter-spacing: .02em;
+}
+
 @media (max-width: 920px) {
   .auth-content { grid-template-columns: 1fr; max-width: 440px; gap: 26px; }
   .auth-brand { text-align: center; }
   .auth-brand h1 { font-size: 30px; }
   .auth-brand > p, .brand-points { display: none; }
   .brand-row { justify-content: center; margin-bottom: 4px; }
+  .auth-credit { display: none; }
 }
 @media (max-width: 520px) {
   .auth-card { padding: 26px 22px; }

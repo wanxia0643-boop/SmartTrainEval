@@ -1,0 +1,18 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="智训评">
+  <!-- 上升的进阶方块（青→蓝→靛），构成学习进阶路径 -->
+  <rect x="120" y="26" width="28" height="28" rx="7" fill="#19A7E6"/>
+  <rect x="112" y="60" width="28" height="28" rx="7" fill="#2F57E0"/>
+  <rect x="122" y="94" width="28" height="28" rx="7" fill="#3B43D6"/>
+
+  <!-- 打开的书：左页（青）右页（靛），中间白色 S 形书脊 -->
+  <path d="M127 130 C103 117 71 117 43 129 L57 178 C84 167 108 178 127 210 Z" fill="#19A7E6"/>
+  <path d="M129 130 C153 117 185 117 213 129 L199 178 C172 167 148 178 129 210 Z" fill="#3B43D6"/>
+
+  <!-- 白色 S 形书脊/成长路径 -->
+  <path d="M128 208 C140 184 116 168 130 146 C140 131 120 126 128 112"
+        fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 书页内缘高光 -->
+  <path d="M64 168 C86 160 106 168 122 190" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+  <path d="M192 168 C170 160 150 168 134 190" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+</svg>

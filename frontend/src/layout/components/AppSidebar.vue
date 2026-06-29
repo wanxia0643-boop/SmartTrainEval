@@ -21,7 +21,7 @@ function handleSidebarControl() {
 <template>
   <aside class="sidebar" :class="{ 'is-collapsed': collapsed, 'is-mobile-open': appStore.mobileNavOpen }">
     <div class="brand-lockup" :aria-label="collapsed ? '智训评' : '智训评 软件实训智能评价系统'">
-      <div class="brand-mark">智</div>
+      <div class="brand-mark"><img src="/logo.svg" alt="" /></div>
       <div v-show="!collapsed" class="brand-copy">
         <strong>智训评</strong>
         <span>软件实训智能评价系统</span>

@@ -1,8 +1,8 @@
 <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="智训评">
-  <!-- 上升的进阶方块（青→蓝→靛），构成学习进阶路径 -->
-  <rect x="120" y="26" width="28" height="28" rx="7" fill="#19A7E6"/>
-  <rect x="112" y="60" width="28" height="28" rx="7" fill="#2F57E0"/>
-  <rect x="122" y="94" width="28" height="28" rx="7" fill="#3B43D6"/>
+  <!-- 上升的进阶方块（青→蓝→靛），沿 S 形路径错落上升 -->
+  <rect x="120" y="26" width="28" height="28" rx="7" fill="#19A7E6" transform="rotate(-12 134 40)"/>
+  <rect x="112" y="60" width="28" height="28" rx="7" fill="#2F57E0" transform="rotate(9 126 74)"/>
+  <rect x="122" y="94" width="28" height="28" rx="7" fill="#3B43D6" transform="rotate(-5 136 108)"/>
 
   <!-- 打开的书：左页（青）右页（靛），中间白色 S 形书脊 -->
   <path d="M127 130 C103 117 71 117 43 129 L57 178 C84 167 108 178 127 210 Z" fill="#19A7E6"/>

@@ -55,6 +55,9 @@ async function submit() {
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#eef5ff" /><stop offset=".55" stop-color="#d8e8ff" /><stop offset="1" stop-color="#c6dcfb" />
         </linearGradient>
+        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#d4e6fb" /><stop offset="1" stop-color="#bcd6f4" />
+        </linearGradient>
         <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#eaf3ff" /><stop offset="1" stop-color="#cfe2ff" />
         </linearGradient>
@@ -62,101 +65,137 @@ async function submit() {
 
       <rect width="1440" height="820" fill="url(#sky)" />
 
-      <!-- 漂浮的云 -->
+      <!-- 漂浮的云（舒缓） -->
       <g fill="#ffffff" opacity=".7">
-        <g><animateTransform attributeName="transform" type="translate" values="0 0;70 0;0 0" dur="26s" repeatCount="indefinite"/>
+        <g><animateTransform attributeName="transform" type="translate" values="0 0;64 0;0 0" dur="34s" repeatCount="indefinite"/>
           <ellipse cx="240" cy="120" rx="70" ry="26"/><ellipse cx="300" cy="108" rx="54" ry="24"/></g>
-        <g opacity=".75"><animateTransform attributeName="transform" type="translate" values="0 0;-60 0;0 0" dur="32s" repeatCount="indefinite"/>
+        <g opacity=".75"><animateTransform attributeName="transform" type="translate" values="0 0;-54 0;0 0" dur="42s" repeatCount="indefinite"/>
           <ellipse cx="1080" cy="150" rx="80" ry="28"/><ellipse cx="1150" cy="138" rx="56" ry="24"/></g>
       </g>
 
-      <!-- 知识网络（脉冲节点） -->
-      <g stroke="#9cc0f5" stroke-width="1.4" fill="none" opacity=".7">
-        <path d="M170 250 L320 200 L470 280 M320 200 L300 330"/>
+      <!-- 知识网络（缓和脉冲） -->
+      <g stroke="#9cc0f5" stroke-width="1.4" fill="none" opacity=".65">
+        <path d="M150 250 L300 205 L450 285 M300 205 L285 330"/>
       </g>
       <g fill="#2f6bff">
-        <circle cx="170" cy="250" r="4"><animate attributeName="r" values="4;7;4" dur="2.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;.5;1" dur="2.6s" repeatCount="indefinite"/></circle>
-        <circle cx="320" cy="200" r="5"><animate attributeName="r" values="5;8;5" dur="3.2s" repeatCount="indefinite"/></circle>
-        <circle cx="470" cy="280" r="4"><animate attributeName="r" values="4;7;4" dur="2.9s" repeatCount="indefinite"/></circle>
-        <circle cx="300" cy="330" r="3.5"><animate attributeName="r" values="3.5;6;3.5" dur="2.3s" repeatCount="indefinite"/></circle>
+        <circle cx="150" cy="250" r="4"><animate attributeName="r" values="4;6.5;4" dur="4.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.5;.9" dur="4.2s" repeatCount="indefinite"/></circle>
+        <circle cx="300" cy="205" r="5"><animate attributeName="r" values="5;7.5;5" dur="5s" repeatCount="indefinite"/></circle>
+        <circle cx="450" cy="285" r="4"><animate attributeName="r" values="4;6.5;4" dur="4.6s" repeatCount="indefinite"/></circle>
+        <circle cx="285" cy="330" r="3.5"><animate attributeName="r" values="3.5;5.5;3.5" dur="3.8s" repeatCount="indefinite"/></circle>
       </g>
 
-      <!-- 高校建筑群 -->
+      <!-- 现代玻璃幕墙建筑群 -->
       <g>
-        <!-- 左教学楼 -->
-        <rect x="120" y="430" width="230" height="150" fill="#c4d9f6"/>
-        <g fill="#ffffff" opacity=".85">
-          <rect x="150" y="455" width="22" height="28"/><rect x="186" y="455" width="22" height="28"/><rect x="222" y="455" width="22" height="28"/><rect x="258" y="455" width="22" height="28"/><rect x="294" y="455" width="22" height="28"/>
-          <rect x="150" y="500" width="22" height="28"/><rect x="222" y="500" width="22" height="28"/><rect x="294" y="500" width="22" height="28"/>
+        <!-- 左玻璃塔 -->
+        <polygon points="150,360 330,360 330,580 150,580" fill="url(#glass)"/>
+        <polygon points="150,360 330,360 312,338 168,338" fill="#cadcf6"/>
+        <g stroke="#ffffff" stroke-width="2" opacity=".75">
+          <line x1="195" y1="360" x2="195" y2="580"/><line x1="240" y1="360" x2="240" y2="580"/><line x1="285" y1="360" x2="285" y2="580"/>
+          <line x1="150" y1="408" x2="330" y2="408"/><line x1="150" y1="456" x2="330" y2="456"/><line x1="150" y1="504" x2="330" y2="504"/><line x1="150" y1="552" x2="330" y2="552"/>
         </g>
-        <!-- 中央主楼（古典学院建筑） -->
-        <polygon points="560,360 730,290 900,360" fill="#b6cef2"/>
-        <rect x="585" y="360" width="290" height="220" fill="#c9dcf7"/>
-        <g fill="#aecbf2"><rect x="600" y="380" width="16" height="200"/><rect x="640" y="380" width="16" height="200"/><rect x="680" y="380" width="16" height="200"/><rect x="764" y="380" width="16" height="200"/><rect x="804" y="380" width="16" height="200"/><rect x="844" y="380" width="16" height="200"/></g>
-        <rect x="705" y="250" width="50" height="60" fill="#b6cef2"/>
-        <circle cx="730" cy="246" r="26" fill="#b6cef2"/>
-        <line x1="730" y1="222" x2="730" y2="206" stroke="#8fb4ee" stroke-width="3"/>
-        <circle cx="730" cy="270" r="9" fill="#ffffff"/>
-        <!-- 右实训楼 -->
-        <rect x="1010" y="400" width="300" height="180" fill="#bcd4f5"/>
-        <g fill="#ffffff" opacity=".8">
-          <rect x="1040" y="425" width="26" height="30"/><rect x="1086" y="425" width="26" height="30"/><rect x="1132" y="425" width="26" height="30"/><rect x="1178" y="425" width="26" height="30"/><rect x="1224" y="425" width="26" height="30"/><rect x="1270" y="425" width="26" height="30"/>
-          <rect x="1040" y="475" width="26" height="30"/><rect x="1132" y="475" width="26" height="30"/><rect x="1224" y="475" width="26" height="30"/>
+        <g fill="#ffffff" opacity=".5"><rect x="198" y="411" width="39" height="42"/><rect x="288" y="507" width="39" height="42"/></g>
+
+        <!-- 中央玻璃主塔（最高） -->
+        <polygon points="560,250 770,250 770,580 560,580" fill="url(#glass)"/>
+        <polygon points="560,250 770,250 752,224 578,224" fill="#cadcf6"/>
+        <rect x="655" y="186" width="20" height="40" fill="#bcd6f4"/>
+        <g stroke="#ffffff" stroke-width="2" opacity=".8">
+          <line x1="612" y1="250" x2="612" y2="580"/><line x1="665" y1="250" x2="665" y2="580"/><line x1="718" y1="250" x2="718" y2="580"/>
+          <line x1="560" y1="300" x2="770" y2="300"/><line x1="560" y1="350" x2="770" y2="350"/><line x1="560" y1="400" x2="770" y2="400"/><line x1="560" y1="450" x2="770" y2="450"/><line x1="560" y1="500" x2="770" y2="500"/><line x1="560" y1="550" x2="770" y2="550"/>
         </g>
+        <g fill="#ffffff" opacity=".55"><rect x="615" y="303" width="47" height="44"/><rect x="668" y="403" width="47" height="44"/><rect x="615" y="503" width="47" height="44"/></g>
+
+        <!-- 右现代低层（横向玻璃带） -->
+        <polygon points="1010,420 1320,420 1320,580 1010,580" fill="url(#glass)"/>
+        <polygon points="1010,420 1320,420 1300,400 1030,400" fill="#cadcf6"/>
+        <g stroke="#ffffff" stroke-width="3" opacity=".7">
+          <line x1="1010" y1="460" x2="1320" y2="460"/><line x1="1010" y1="500" x2="1320" y2="500"/><line x1="1010" y1="540" x2="1320" y2="540"/>
+        </g>
+        <g fill="#ffffff" opacity=".5"><rect x="1040" y="463" width="50" height="34"/><rect x="1180" y="503" width="50" height="34"/></g>
       </g>
 
       <!-- 地面 -->
       <rect x="0" y="580" width="1440" height="240" fill="#b3d0f4"/>
       <rect x="0" y="580" width="1440" height="10" fill="#a6c7f1"/>
 
-      <!-- 流动的成长路径 + 移动光点 -->
-      <path id="flowpath" d="M120 640 C320 600 360 720 560 670 C760 620 820 730 1020 680" fill="none" stroke="#2f6bff" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" opacity=".55">
-        <animate attributeName="stroke-dashoffset" values="0;-140" dur="4s" repeatCount="indefinite"/>
+      <!-- 流动的成长路径 + 移动光点（舒缓） -->
+      <path id="flowpath" d="M120 645 C320 605 360 720 560 675 C760 630 820 730 1020 685" fill="none" stroke="#2f6bff" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" opacity=".5">
+        <animate attributeName="stroke-dashoffset" values="0;-140" dur="6s" repeatCount="indefinite"/>
       </path>
-      <circle r="6" fill="#2f6bff"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#flowpath"/></animateMotion></circle>
+      <circle r="6" fill="#2f6bff"><animateMotion dur="9s" repeatCount="indefinite"><mpath href="#flowpath"/></animateMotion></circle>
 
-      <!-- 实训机房：教师 + 学生工位 -->
-      <!-- 讲台教师 -->
+      <!-- 小组讨论区 -->
       <g>
-        <rect x="150" y="470" width="92" height="64" rx="6" fill="#dbe8fb" stroke="#9cc0f5" stroke-width="2"/>
-        <line x1="196" y1="534" x2="196" y2="560" stroke="#9cc0f5" stroke-width="3"/>
-        <circle cx="300" cy="600" r="16" fill="#5b8fe0"/>
-        <path d="M276 686 v-46 a24 24 0 0 1 48 0 v46 Z" fill="#6f9fe6"/>
-        <path d="M324 648 l40 -30" stroke="#6f9fe6" stroke-width="10" stroke-linecap="round"/>
+        <!-- 演示白板（柱状图） -->
+        <rect x="318" y="486" width="104" height="74" rx="6" fill="#eef6ff" stroke="#9cc0f5" stroke-width="2"/>
+        <g fill="#2f6bff"><rect x="336" y="524" width="14" height="22"/><rect x="358" y="512" width="14" height="34"/><rect x="380" y="500" width="14" height="46"/></g>
+        <rect x="398" y="500" width="14" height="46" fill="#19a7e6"/>
+        <line x1="370" y1="560" x2="370" y2="584" stroke="#9cc0f5" stroke-width="3"/>
+
+        <!-- 站立讲解（女·马尾，指向白板） -->
+        <path d="M452 700 v-52 a17 17 0 0 1 34 0 v52 Z" fill="#7fa8e6"/>
+        <path d="M433 650 l-46 -22" stroke="#7fa8e6" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="469" cy="606" r="15" fill="#6f9fe6"/>
+        <path d="M455 604 a14 13 0 0 1 28 0 q-14 -9 -28 0 Z" fill="#4f7fd6"/>
+        <path d="M484 604 q13 6 8 30 q-7 -3 -11 -22 Z" fill="#4f7fd6"/>
+
+        <!-- 远端两位（面向观众） -->
+        <!-- 男·短发，举手提问 -->
+        <path d="M520 712 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
+        <path d="M556 678 l16 -30" stroke="#7fa8e6" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="540" cy="654" r="15" fill="#6f9fe6"/>
+        <path d="M526 652 a14 12 0 0 1 28 0 q-14 -8 -28 0 Z" fill="#4f7fd6"/>
+        <!-- 女·短卷发 -->
+        <path d="M626 712 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
+        <circle cx="646" cy="654" r="15" fill="#6f9fe6"/>
+        <path d="M628 656 a18 16 0 0 1 36 0 q-6 -12 -18 -12 q-12 0 -18 12 Z" fill="#4f7fd6"/>
+
+        <!-- 椭圆会议桌 -->
+        <ellipse cx="600" cy="712" rx="150" ry="30" fill="#5b8fe0"/>
+        <ellipse cx="600" cy="706" rx="150" ry="26" fill="#6f9be6"/>
+        <ellipse cx="600" cy="704" rx="120" ry="18" fill="#a9c6ef" opacity=".5"/>
+
+        <!-- 近端两位（背对观众） -->
+        <!-- 女·马尾 -->
+        <path d="M520 752 v-26 a26 26 0 0 1 52 0 v26 Z" fill="#7fa8e6"/>
+        <circle cx="546" cy="700" r="16" fill="#6f9fe6"/>
+        <path d="M534 690 a14 14 0 0 1 24 0 q-12 -6 -24 0 Z" fill="#4f7fd6"/>
+        <path d="M546 712 q-4 18 0 34 q6 -2 6 -20 Z" fill="#4f7fd6"/>
+        <!-- 男 -->
+        <path d="M624 752 v-26 a26 26 0 0 1 52 0 v26 Z" fill="#7fa8e6"/>
+        <circle cx="650" cy="700" r="16" fill="#6f9fe6"/>
+        <path d="M636 694 a15 13 0 0 1 28 0 q-14 -8 -28 0 Z" fill="#4f7fd6"/>
       </g>
 
-      <!-- 学生工位（头 + 显示器，屏幕闪烁） -->
+      <!-- 右侧实训工位（屏幕缓和闪烁） -->
       <g>
-        <!-- 长桌 -->
-        <rect x="430" y="700" width="640" height="16" rx="4" fill="#5b8fe0"/>
-        <g>
-          <!-- 工位 1 -->
-          <circle cx="480" cy="636" r="15" fill="#6f9fe6"/><path d="M459 700 v-34 a21 21 0 0 1 42 0 v34 Z" fill="#7fa8e6"/>
-          <rect x="452" y="668" width="56" height="38" rx="3" fill="#4f86e8"/><rect x="457" y="673" width="46" height="28" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.55;1" dur="3.4s" repeatCount="indefinite"/></rect>
-          <!-- 工位 2 -->
-          <circle cx="620" cy="636" r="15" fill="#6f9fe6"/><path d="M599 700 v-34 a21 21 0 0 1 42 0 v34 Z" fill="#7fa8e6"/>
-          <rect x="592" y="668" width="56" height="38" rx="3" fill="#4f86e8"/><rect x="597" y="673" width="46" height="28" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.6;1" dur="2.8s" repeatCount="indefinite"/></rect>
-          <!-- 工位 3 -->
-          <circle cx="760" cy="636" r="15" fill="#6f9fe6"/><path d="M739 700 v-34 a21 21 0 0 1 42 0 v34 Z" fill="#7fa8e6"/>
-          <rect x="732" y="668" width="56" height="38" rx="3" fill="#4f86e8"/><rect x="737" y="673" width="46" height="28" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.5;1" dur="3.9s" repeatCount="indefinite"/></rect>
-          <!-- 工位 4 -->
-          <circle cx="900" cy="636" r="15" fill="#6f9fe6"/><path d="M879 700 v-34 a21 21 0 0 1 42 0 v34 Z" fill="#7fa8e6"/>
-          <rect x="872" y="668" width="56" height="38" rx="3" fill="#4f86e8"/><rect x="877" y="673" width="46" height="28" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.62;1" dur="3.1s" repeatCount="indefinite"/></rect>
+        <rect x="812" y="704" width="200" height="14" rx="4" fill="#5b8fe0"/>
+        <!-- 女·长发 -->
+        <circle cx="858" cy="648" r="15" fill="#6f9fe6"/>
+        <path d="M843 646 a15 14 0 0 1 30 0 l4 30 q-19 8 -38 0 Z" fill="#4f7fd6"/>
+        <path d="M838 700 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
+        <rect x="832" y="672" width="54" height="36" rx="3" fill="#4f86e8"/><rect x="837" y="677" width="44" height="26" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.72;1" dur="4.6s" repeatCount="indefinite"/></rect>
+        <!-- 男 -->
+        <circle cx="952" cy="648" r="15" fill="#6f9fe6"/>
+        <path d="M938 646 a14 12 0 0 1 28 0 q-14 -8 -28 0 Z" fill="#4f7fd6"/>
+        <path d="M932 700 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
+        <rect x="926" y="672" width="54" height="36" rx="3" fill="#4f86e8"/><rect x="931" y="677" width="44" height="26" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.66;1" dur="5.4s" repeatCount="indefinite"/></rect>
+      </g>
+
+      <!-- 漂浮的学士帽 / 书 / 齿轮（舒缓） -->
+      <g opacity=".9">
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 -14;0 0" dur="8s" repeatCount="indefinite"/>
+        <g transform="translate(1015 250)">
+          <path d="M0 0 -34 14 0 28 34 14 Z" fill="#2f57e0"/><path d="M-20 20 v12 c0 6 40 6 40 0 v-12 l-20 8 Z" fill="#19a7e6"/>
         </g>
       </g>
-
-      <!-- 漂浮的学士帽 / 书 / 齿轮 -->
-      <g transform="translate(1015 250)" opacity=".9">
-        <animateTransform attributeName="transform" type="translate" values="1015 250;1015 232;1015 250" dur="6s" repeatCount="indefinite" additive="sum"/>
-        <path d="M0 0 -34 14 0 28 34 14 Z" fill="#2f57e0"/><path d="M-20 20 v12 c0 6 40 6 40 0 v-12 l-20 8 Z" fill="#19a7e6"/>
-      </g>
       <g opacity=".85">
-        <animateTransform attributeName="transform" type="translate" values="0 0;0 -16;0 0" dur="5s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 -16;0 0" dur="7s" repeatCount="indefinite"/>
         <path d="M430 250 c10 -5 22 -5 30 1 v34 c-8 -6 -20 -6 -30 -1 Z" fill="#19a7e6"/>
         <path d="M492 250 c-10 -5 -22 -5 -30 1 v34 c8 -6 20 -6 30 -1 Z" fill="#2f57e0"/>
       </g>
-      <g transform="translate(980 360)" opacity=".5">
-        <g><animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="16s" repeatCount="indefinite"/>
+      <g transform="translate(975 355)" opacity=".45">
+        <g><animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="24s" repeatCount="indefinite"/>
           <path d="M-4 -22 h8 l2 8 6 3 7 -4 6 6 -4 7 3 6 8 2 v8 l-8 2 -3 6 4 7 -6 6 -7 -4 -6 3 -2 8 h-8 l-2 -8 -6 -3 -7 4 -6 -6 4 -7 -3 -6 -8 -2 v-8 l8 -2 3 -6 -4 -7 6 -6 7 4 6 -3 Z" fill="#8fb4ee"/>
           <circle r="8" fill="#d8e8ff"/>
         </g>

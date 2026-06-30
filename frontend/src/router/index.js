@@ -14,17 +14,21 @@ const router = createRouter({
 })
 
 let dynamicRoutesReady = false
+let installedRole = ''
 
 export function installRoleRoutes(role) {
-  if (dynamicRoutesReady) return
+  if (dynamicRoutesReady && installedRole === role && router.hasRoute('dashboard')) return
+  if (dynamicRoutesReady) resetRoleRoutes()
   getAccessibleRoutes(role).forEach((route) => router.addRoute('root', route))
   dynamicRoutesReady = true
+  installedRole = role
 }
 
 export function resetRoleRoutes() {
   const routes = ['student', 'teacher', 'enterprise', 'admin'].flatMap(getAccessibleRoutes)
   routes.forEach((route) => router.hasRoute(route.name) && router.removeRoute(route.name))
   dynamicRoutesReady = false
+  installedRole = ''
 }
 
 router.beforeEach(async (to) => {

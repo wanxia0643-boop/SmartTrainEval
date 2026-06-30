@@ -35,7 +35,9 @@ export const roleCredentials = {
 }
 
 const dashboard = {
-  path: 'dashboard', name: 'dashboard', component: Dashboard,
+  path: 'dashboard',
+  name: 'dashboard',
+  component: Dashboard,
   meta: { title: '工作台', icon: Monitor, roles: ['student', 'teacher', 'enterprise', 'admin'] },
 }
 
@@ -63,11 +65,11 @@ export const protectedRoutes = [
   },
   {
     path: 'intelligent-evaluation', name: 'intelligent-evaluation', component: IntelligentEvaluation,
-    meta: { title: '智能评价', icon: DocumentChecked, roles: ['teacher'] },
+    meta: { title: '智能评价', icon: DocumentChecked, roles: ['teacher', 'admin'] },
   },
   {
     path: 'student-archive', name: 'student-archive', component: StudentArchive,
-    meta: { title: '学生档案', icon: UserFilled, roles: ['teacher'] },
+    meta: { title: '学生档案', icon: UserFilled, roles: ['teacher', 'admin'] },
   },
   {
     path: 'data-report', name: 'data-report', component: DataReport,

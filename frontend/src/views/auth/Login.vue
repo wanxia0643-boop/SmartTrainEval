@@ -146,9 +146,10 @@ async function submit() {
       </g>
     </svg>
 
-    <!-- 前景人物：unDraw 教学/实训插画（MIT 许可） -->
+    <!-- 前景人物：unDraw 教学/讨论/实训插画（MIT 许可） -->
     <img class="fig fig-classroom" src="/illus/educator.svg" alt="" aria-hidden="true" />
-    <img class="fig fig-coding" src="/illus/developer-activity.svg" alt="" aria-hidden="true" />
+    <img class="fig fig-group" src="/illus/group-video.svg" alt="" aria-hidden="true" />
+    <img class="fig fig-coding" src="/illus/coding.svg" alt="" aria-hidden="true" />
 
     <div class="auth-content">
       <aside class="auth-brand">
@@ -213,11 +214,13 @@ async function submit() {
 }
 .auth-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-/* 前景人物插画 */
+/* 前景人物插画（沿底部一字排开） */
 .fig { position: absolute; bottom: 0; z-index: 1; pointer-events: none; user-select: none; filter: drop-shadow(0 12px 22px rgba(20, 50, 110, .14)); }
-.fig-classroom { left: 1.5%; height: min(44vh, 360px); }
-.fig-coding { left: 26%; height: min(33vh, 264px); }
-@media (max-width: 1180px) { .fig-coding { display: none; } }
+.fig-classroom { left: 0.5%; height: min(42vh, 340px); }
+.fig-group { left: 20%; bottom: 2%; height: min(30vh, 240px); }
+.fig-coding { left: 39%; height: min(31vh, 250px); }
+@media (max-width: 1280px) { .fig-coding { display: none; } }
+@media (max-width: 1040px) { .fig-group { display: none; } }
 @media (max-width: 920px) { .fig { display: none; } }
 
 .auth-content {

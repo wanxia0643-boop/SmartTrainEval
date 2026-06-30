@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Refresh } from '@element-plus/icons-vue'
+import { Plus, Refresh, UploadFilled } from '@element-plus/icons-vue'
 import { listProjects } from '../../api/projects'
 import { createAchievement, listAchievements, updateAchievement } from '../../api/achievements'
+import { uploadAttachment } from '../../api/uploads'
 import { useUserStore } from '../../stores/user'
 
 const userStore = useUserStore()
@@ -22,8 +23,17 @@ const dialogVisible = ref(false)
 const dialogMode = ref('create')
 const formRef = ref()
 const submitting = ref(false)
-const blankForm = () => ({ id: null, project_id: null, title: '', content: '', repo_url: '', attachment_url: '' })
+const uploadLoading = ref(false)
+const blankForm = () => ({
+  id: null,
+  project_id: null,
+  title: '',
+  content: '',
+  repo_url: '',
+  attachment_url: '',
+})
 const form = reactive(blankForm())
+
 const rules = {
   project_id: [{ required: true, message: '请选择实训项目', trigger: 'change' }],
   title: [{ required: true, message: '请输入成果标题', trigger: 'blur' }],
@@ -58,10 +68,29 @@ function openCreate() {
 function openEdit(row) {
   dialogMode.value = 'edit'
   Object.assign(form, blankForm(), {
-    id: row.id, project_id: row.project_id, title: row.title,
-    content: row.content || '', repo_url: row.repo_url || '', attachment_url: row.attachment_url || '',
+    id: row.id,
+    project_id: row.project_id,
+    title: row.title,
+    content: row.content || '',
+    repo_url: row.repo_url || '',
+    attachment_url: row.attachment_url || '',
   })
   dialogVisible.value = true
+}
+
+async function handleUpload(file) {
+  uploadLoading.value = true
+  try {
+    const data = await uploadAttachment(file)
+    form.attachment_url = data.file_url
+    if (data.extracted_text && !form.content) {
+      form.content = data.extracted_text.slice(0, 5000)
+    }
+    ElMessage.success('附件已上传')
+  } finally {
+    uploadLoading.value = false
+  }
+  return false
 }
 
 async function submit() {
@@ -69,18 +98,21 @@ async function submit() {
   if (!valid) return
   submitting.value = true
   try {
+    const payload = {
+      title: form.title,
+      content: form.content || null,
+      repo_url: form.repo_url || null,
+      attachment_url: form.attachment_url || null,
+    }
     if (dialogMode.value === 'create') {
       await createAchievement({
-        project_id: form.project_id, student_id: userStore.userId, title: form.title,
-        content: form.content || null, repo_url: form.repo_url || null,
-        attachment_url: form.attachment_url || null,
+        ...payload,
+        project_id: form.project_id,
+        student_id: userStore.userId,
       })
       ElMessage.success('成果已提交')
     } else {
-      await updateAchievement(form.id, {
-        title: form.title, content: form.content || null,
-        repo_url: form.repo_url || null, attachment_url: form.attachment_url || null,
-      })
+      await updateAchievement(form.id, payload)
       ElMessage.success('成果已更新')
     }
     dialogVisible.value = false
@@ -108,14 +140,15 @@ onMounted(async () => {
     </div>
 
     <article class="data-panel">
-      <div class="panel-head"><strong>可参与的实训项目</strong>
-        <el-button text :icon="Refresh" @click="fetchProjects" :loading="projLoading">刷新</el-button>
+      <div class="panel-head">
+        <strong>可参与的实训项目</strong>
+        <el-button text :icon="Refresh" :loading="projLoading" @click="fetchProjects">刷新</el-button>
       </div>
       <el-table :data="projects" v-loading="projLoading" stripe style="width: 100%">
-        <el-table-column prop="project_name" label="项目名称" min-width="160" />
+        <el-table-column prop="project_name" label="项目名称" min-width="180" />
         <el-table-column prop="project_code" label="编码" min-width="120" />
         <el-table-column label="难度" width="80">
-          <template #default="{ row }">{{ DIFFICULTY[row.difficulty] || '—' }}</template>
+          <template #default="{ row }">{{ DIFFICULTY[row.difficulty] || '-' }}</template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
@@ -126,8 +159,9 @@ onMounted(async () => {
     </article>
 
     <article class="data-panel">
-      <div class="panel-head"><strong>我的实训成果</strong>
-        <el-button text :icon="Refresh" @click="fetchAchievements" :loading="achLoading">刷新</el-button>
+      <div class="panel-head">
+        <strong>我的实训成果</strong>
+        <el-button text :icon="Refresh" :loading="achLoading" @click="fetchAchievements">刷新</el-button>
       </div>
       <el-table :data="achievements" v-loading="achLoading" stripe style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
@@ -139,11 +173,11 @@ onMounted(async () => {
           </template>
         </el-table-column>
         <el-table-column label="最终得分" width="100">
-          <template #default="{ row }">{{ row.final_score ?? '—' }}</template>
+          <template #default="{ row }">{{ row.final_score ?? '-' }}</template>
         </el-table-column>
         <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
-            <el-button text type="primary" :disabled="row.status === 3" @click="openEdit(row)">编辑</el-button>
+            <el-button text type="primary" :disabled="[2, 3].includes(row.status)" @click="openEdit(row)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -153,25 +187,33 @@ onMounted(async () => {
     <el-dialog
       v-model="dialogVisible"
       :title="dialogMode === 'create' ? '提交实训成果' : '编辑实训成果'"
-      width="560px"
+      width="600px"
     >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="92px">
         <el-form-item label="实训项目" prop="project_id">
           <el-select v-model="form.project_id" :disabled="dialogMode === 'edit'" placeholder="选择项目" style="width: 100%">
             <el-option v-for="p in projects" :key="p.id" :label="p.project_name" :value="p.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="成果标题" prop="title">
-          <el-input v-model="form.title" placeholder="如：电商系统后端实现" />
+          <el-input v-model="form.title" placeholder="如：评价系统后端实现" />
         </el-form-item>
         <el-form-item label="代码仓库">
           <el-input v-model="form.repo_url" placeholder="选填，Git 仓库地址" />
         </el-form-item>
+        <el-form-item label="成果附件">
+          <div class="upload-line">
+            <el-upload :show-file-list="false" :before-upload="handleUpload">
+              <el-button :icon="UploadFilled" :loading="uploadLoading">上传文件</el-button>
+            </el-upload>
+            <span class="attachment-url">{{ form.attachment_url || '未上传附件' }}</span>
+          </div>
+        </el-form-item>
         <el-form-item label="附件地址">
-          <el-input v-model="form.attachment_url" placeholder="选填，文档/压缩包链接" />
+          <el-input v-model="form.attachment_url" placeholder="也可粘贴外部文档或压缩包链接" />
         </el-form-item>
         <el-form-item label="成果说明">
-          <el-input v-model="form.content" type="textarea" :rows="5" placeholder="实训报告 / 代码说明…" />
+          <el-input v-model="form.content" type="textarea" :rows="6" placeholder="实训报告 / 代码说明 / 附件解析内容" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -186,4 +228,12 @@ onMounted(async () => {
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .panel-head strong { font-size: 15px; }
 .data-panel + .data-panel { margin-top: 16px; }
+.upload-line { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.attachment-url {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 </style>

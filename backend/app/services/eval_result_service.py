@@ -71,6 +71,8 @@ class EvalResultService(CRUDBase[EvalResult]):
 
         if not grouped:
             achievement.final_score = None
+            if achievement.status == 3:
+                achievement.status = 1
             db.add(achievement)
             db.commit()
             return None
@@ -114,6 +116,7 @@ class EvalResultService(CRUDBase[EvalResult]):
         final = final.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         achievement.final_score = final
+        achievement.status = 3
         db.add(achievement)
         db.commit()
         db.refresh(achievement)

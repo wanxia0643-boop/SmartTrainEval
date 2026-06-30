@@ -103,6 +103,7 @@ CREATE TABLE `train_project` (
     `project_code`  VARCHAR(64)     NOT NULL                COMMENT '项目编码（唯一）',
     `org_id`        BIGINT UNSIGNED          DEFAULT NULL   COMMENT '归属组织ID，关联 sys_org.id',
     `teacher_id`    BIGINT UNSIGNED NOT NULL                COMMENT '负责教师ID，关联 sys_user.id',
+    `enterprise_id` BIGINT UNSIGNED          DEFAULT NULL   COMMENT '企业导师ID，关联 sys_user.id',
     `category`      VARCHAR(50)              DEFAULT NULL   COMMENT '项目类别，如：软件开发/网络运维/数据分析',
     `difficulty`    TINYINT         NOT NULL DEFAULT 2      COMMENT '难度：1-初级 2-中级 3-高级',
     `description`   TEXT                     DEFAULT NULL   COMMENT '项目描述与实训要求',
@@ -115,6 +116,7 @@ CREATE TABLE `train_project` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_project_code` (`project_code`),
     KEY `idx_teacher_id` (`teacher_id`),
+    KEY `idx_enterprise_id` (`enterprise_id`),
     KEY `idx_org_id` (`org_id`),
     KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='实训项目表';
@@ -273,6 +275,7 @@ INSERT INTO `sys_role` (`role_name`, `role_code`, `data_scope`, `description`, `
 -- ALTER TABLE `sys_user`         ADD CONSTRAINT `fk_user_role`      FOREIGN KEY (`role_id`)        REFERENCES `sys_role`(`id`);
 -- ALTER TABLE `sys_user`         ADD CONSTRAINT `fk_user_org`       FOREIGN KEY (`org_id`)         REFERENCES `sys_org`(`id`);
 -- ALTER TABLE `train_project`    ADD CONSTRAINT `fk_proj_teacher`   FOREIGN KEY (`teacher_id`)     REFERENCES `sys_user`(`id`);
+-- ALTER TABLE `train_project`    ADD CONSTRAINT `fk_proj_enterprise` FOREIGN KEY (`enterprise_id`)  REFERENCES `sys_user`(`id`);
 -- ALTER TABLE `train_achievement`ADD CONSTRAINT `fk_ach_project`    FOREIGN KEY (`project_id`)     REFERENCES `train_project`(`id`);
 -- ALTER TABLE `train_achievement`ADD CONSTRAINT `fk_ach_student`    FOREIGN KEY (`student_id`)     REFERENCES `sys_user`(`id`);
 -- ALTER TABLE `eval_indicator`   ADD CONSTRAINT `fk_ind_project`    FOREIGN KEY (`project_id`)     REFERENCES `train_project`(`id`);

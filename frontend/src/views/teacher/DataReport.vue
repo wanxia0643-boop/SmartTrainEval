@@ -1,8 +1,9 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Refresh } from '@element-plus/icons-vue'
-import { createReport, deleteReport, listReports } from '../../api/reports'
+import { Download, Plus, Refresh } from '@element-plus/icons-vue'
+import { createReport, deleteReport, downloadReport, listReports } from '../../api/reports'
+import { listProjects } from '../../api/projects'
 import { useUserStore } from '../../stores/user'
 
 const userStore = useUserStore()
@@ -11,21 +12,22 @@ const REPORT_TYPES = [
   { value: 1, label: '学生成绩报表' },
   { value: 2, label: '项目评价报表' },
   { value: 3, label: '组织汇总报表' },
-  { value: 4, label: 'AI使用统计报表' },
+  { value: 4, label: 'AI 使用统计报表' },
 ]
-const typeLabel = (v) => REPORT_TYPES.find((t) => t.value === v)?.label || '—'
+const typeLabel = (v) => REPORT_TYPES.find((t) => t.value === v)?.label || '-'
 const STATUS = { 0: '生成中', 1: '成功', 2: '失败' }
 const STATUS_TAG = { 0: 'warning', 1: 'success', 2: 'danger' }
 
 const loading = ref(false)
 const rows = ref([])
 const total = ref(0)
+const projects = ref([])
 const query = reactive({ page: 1, page_size: 10 })
 
 const dialogVisible = ref(false)
 const formRef = ref()
 const submitting = ref(false)
-const blankForm = () => ({ report_name: '', report_type: 1, project_id: null, file_format: 'PDF' })
+const blankForm = () => ({ report_name: '', report_type: 1, project_id: null, file_format: 'EXCEL' })
 const form = reactive(blankForm())
 const rules = {
   report_name: [{ required: true, message: '请输入报表名称', trigger: 'blur' }],
@@ -42,6 +44,11 @@ async function fetchReports() {
   }
 }
 
+async function fetchProjects() {
+  const data = await listProjects({ page: 1, page_size: 100 })
+  projects.value = data.items
+}
+
 function openCreate() {
   Object.assign(form, blankForm())
   dialogVisible.value = true
@@ -53,9 +60,10 @@ async function submit() {
   submitting.value = true
   try {
     await createReport({
-      report_name: form.report_name, report_type: form.report_type,
-      project_id: form.project_id || null, file_format: form.file_format,
-      generator_id: userStore.userId,
+      report_name: form.report_name,
+      report_type: form.report_type,
+      project_id: form.project_id || null,
+      file_format: form.file_format,
     })
     ElMessage.success('报表已生成')
     dialogVisible.value = false
@@ -65,10 +73,24 @@ async function submit() {
   }
 }
 
+async function download(row) {
+  const blob = await downloadReport(row.id)
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${row.report_name || 'report'}.csv`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 async function remove(row) {
-  await ElMessageBox.confirm(`确认删除报表「${row.report_name}」？`, '删除确认', {
-    type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消',
-  }).catch(() => Promise.reject('cancel'))
+  await ElMessageBox.confirm(`确认删除报表“${row.report_name}”？`, '删除确认', {
+    type: 'warning',
+    confirmButtonText: '删除',
+    cancelButtonText: '取消',
+  }).catch(() => Promise.reject(new Error('cancel')))
   await deleteReport(row.id)
   ElMessage.success('报表已删除')
   if (rows.value.length === 1 && query.page > 1) query.page -= 1
@@ -80,7 +102,9 @@ function handlePageChange(page) {
   fetchReports()
 }
 
-onMounted(fetchReports)
+onMounted(async () => {
+  await Promise.all([fetchProjects(), fetchReports()])
+})
 </script>
 
 <template>
@@ -89,10 +113,10 @@ onMounted(fetchReports)
       <div>
         <p class="page-eyebrow">REPORTS</p>
         <h2>数据报表</h2>
-        <p>分析评价进度、能力分布与质量趋势。</p>
+        <p>生成学生成绩、项目评价和 AI 使用统计报表，支持 Excel 打开。</p>
       </div>
       <div class="hero-actions">
-        <el-button :icon="Refresh" @click="fetchReports" :loading="loading">刷新</el-button>
+        <el-button :icon="Refresh" :loading="loading" @click="fetchReports">刷新</el-button>
         <el-button type="primary" :icon="Plus" @click="openCreate">生成报表</el-button>
       </div>
     </div>
@@ -100,7 +124,7 @@ onMounted(fetchReports)
     <article class="data-panel">
       <el-table :data="rows" v-loading="loading" stripe style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="report_name" label="报表名称" min-width="160" />
+        <el-table-column prop="report_name" label="报表名称" min-width="180" />
         <el-table-column label="类型" min-width="130">
           <template #default="{ row }">{{ typeLabel(row.report_type) }}</template>
         </el-table-column>
@@ -110,9 +134,10 @@ onMounted(fetchReports)
             <el-tag :type="STATUS_TAG[row.status]" effect="plain">{{ STATUS[row.status] }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="110" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
-            <el-button text type="danger" @click="remove(row)">删除</el-button>
+            <el-button text type="primary" :icon="Download" :disabled="row.status !== 1" @click="download(row)">下载</el-button>
+            <el-button v-if="userStore.role === 'admin'" text type="danger" @click="remove(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -129,8 +154,8 @@ onMounted(fetchReports)
       </div>
     </article>
 
-    <el-dialog v-model="dialogVisible" title="生成报表" width="480px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+    <el-dialog v-model="dialogVisible" title="生成报表" width="500px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="92px">
         <el-form-item label="报表名称" prop="report_name">
           <el-input v-model="form.report_name" placeholder="报表名称" />
         </el-form-item>
@@ -139,14 +164,15 @@ onMounted(fetchReports)
             <el-option v-for="t in REPORT_TYPES" :key="t.value" :label="t.label" :value="t.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="关联项目ID">
-          <el-input-number v-model="form.project_id" :min="1" controls-position="right" placeholder="选填" />
+        <el-form-item label="关联项目">
+          <el-select v-model="form.project_id" clearable placeholder="不选则统计全部可见项目" style="width: 100%">
+            <el-option v-for="p in projects" :key="p.id" :label="p.project_name" :value="p.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="文件格式">
           <el-select v-model="form.file_format" style="width: 100%">
-            <el-option label="PDF" value="PDF" />
             <el-option label="EXCEL" value="EXCEL" />
-            <el-option label="WORD" value="WORD" />
+            <el-option label="PDF（简版）" value="PDF" />
           </el-select>
         </el-form-item>
       </el-form>

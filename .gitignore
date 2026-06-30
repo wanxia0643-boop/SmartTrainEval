@@ -2,11 +2,15 @@
 frontend/node_modules/
 frontend/dist/
 frontend/.npm-cache/
+.npm-cache/
 
 # Local design-QA capture artifacts
 frontend/qa-*.png
 frontend/design-qa.md
 frontend/AGENTS.md
+backend/uploads/
+backend/generated/
+backend/app/logs/
 
 # OS/editor files
 .DS_Store

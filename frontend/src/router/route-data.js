@@ -21,13 +21,16 @@ import PartnerSchools from '../views/enterprise/PartnerSchools.vue'
 import SystemSettings from '../views/admin/SystemSettings.vue'
 
 export const roleLabels = {
-  student: '学生', teacher: '教师', enterprise: '企业导师', admin: '系统管理员',
+  student: '学生',
+  teacher: '教师',
+  enterprise: '企业导师',
+  admin: '系统管理员',
 }
 
 export const roleCredentials = {
   student: { account: 'student', password: '123456', name: '林晓', department: '软件工程 2024 级' },
   teacher: { account: 'teacher', password: '123456', name: '张老师', department: '软件工程学院' },
-  enterprise: { account: 'enterprise', password: '123456', name: '陈导师', department: '智云科技有限公司' },
+  enterprise: { account: 'enterprise', password: '123456', name: '陈导师', department: '龙芯中科技术股份有限公司' },
   admin: { account: 'admin', password: '123456', name: '系统管理员', department: '智训评运营中心' },
 }
 
@@ -52,7 +55,7 @@ export const protectedRoutes = [
   },
   {
     path: 'training-management', name: 'training-management', component: TrainingManagement,
-    meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher'] },
+    meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher', 'admin'] },
   },
   {
     path: 'indicator-management', name: 'indicator-management', component: IndicatorManagement,

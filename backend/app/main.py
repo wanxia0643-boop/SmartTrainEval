@@ -10,6 +10,7 @@ if str(_BACKEND_DIR) not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
@@ -52,6 +53,10 @@ def create_app() -> FastAPI:
 
     # 路由
     app.include_router(api_router, prefix=settings.api_prefix)
+    (_BACKEND_DIR / "uploads").mkdir(exist_ok=True)
+    (_BACKEND_DIR / "generated").mkdir(exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=str(_BACKEND_DIR / "uploads")), name="uploads")
+    app.mount("/generated", StaticFiles(directory=str(_BACKEND_DIR / "generated")), name="generated")
 
     @app.get("/health", tags=["系统"], summary="健康检查")
     def health():

@@ -1,4 +1,4 @@
-"""报表记录 schema。"""
+"""Pydantic schemas for report records."""
 from datetime import datetime
 from typing import Any
 
@@ -6,23 +6,21 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReportBase(BaseModel):
-    report_name: str = Field(..., max_length=150, description="报表名称")
-    report_type: int = Field(
-        default=1, description="类型：1-学生成绩 2-项目评价 3-组织汇总 4-AI使用统计"
-    )
-    project_id: int | None = Field(default=None, description="关联项目ID")
-    org_id: int | None = Field(default=None, description="关联组织ID")
-    file_format: str = Field(default="PDF", max_length=20, description="格式：PDF/EXCEL/WORD")
-    params: dict[str, Any] | None = Field(default=None, description="生成参数快照")
+    report_name: str = Field(..., max_length=150, description="Report name")
+    report_type: int = Field(default=1, description="1-score 2-project 3-org 4-ai usage")
+    project_id: int | None = Field(default=None, description="Project ID")
+    org_id: int | None = Field(default=None, description="Organization ID")
+    file_format: str = Field(default="EXCEL", max_length=20, description="EXCEL/PDF/WORD")
+    params: dict[str, Any] | None = Field(default=None, description="Query params snapshot")
 
 
 class ReportCreate(ReportBase):
-    generator_id: int = Field(..., description="生成人ID")
+    generator_id: int | None = Field(default=None, description="Generator user ID")
 
 
 class ReportUpdate(BaseModel):
     file_url: str | None = Field(default=None, max_length=500)
-    status: int | None = Field(default=None, description="0-生成中 1-成功 2-失败")
+    status: int | None = Field(default=None, description="0-generating 1-success 2-failed")
     remark: str | None = Field(default=None, max_length=500)
 
 

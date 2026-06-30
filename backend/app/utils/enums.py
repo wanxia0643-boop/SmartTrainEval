@@ -1,11 +1,11 @@
-"""通用枚举：角色编码等。"""
-from enum import StrEnum
+"""Common enums."""
+from enum import Enum
 
 
-class RoleCode(StrEnum):
-    """系统四种角色编码。"""
+class RoleCode(str, Enum):
+    """System role codes."""
 
-    STUDENT = "STUDENT"        # 学生
-    TEACHER = "TEACHER"        # 教师
-    ENTERPRISE = "ENTERPRISE"  # 企业导师
-    ADMIN = "ADMIN"            # 管理员
+    STUDENT = "STUDENT"
+    TEACHER = "TEACHER"
+    ENTERPRISE = "ENTERPRISE"
+    ADMIN = "ADMIN"

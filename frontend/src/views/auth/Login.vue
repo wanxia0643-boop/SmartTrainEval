@@ -73,19 +73,14 @@ async function submit() {
           <ellipse cx="1080" cy="150" rx="80" ry="28"/><ellipse cx="1150" cy="138" rx="56" ry="24"/></g>
       </g>
 
-      <!-- 知识网络（缓和脉冲） -->
-      <g stroke="#9cc0f5" stroke-width="1.4" fill="none" opacity=".65">
-        <path d="M150 250 L300 205 L450 285 M300 205 L285 330"/>
-      </g>
-      <g fill="#2f6bff">
-        <circle cx="150" cy="250" r="4"><animate attributeName="r" values="4;6.5;4" dur="4.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.5;.9" dur="4.2s" repeatCount="indefinite"/></circle>
-        <circle cx="300" cy="205" r="5"><animate attributeName="r" values="5;7.5;5" dur="5s" repeatCount="indefinite"/></circle>
-        <circle cx="450" cy="285" r="4"><animate attributeName="r" values="4;6.5;4" dur="4.6s" repeatCount="indefinite"/></circle>
-        <circle cx="285" cy="330" r="3.5"><animate attributeName="r" values="3.5;5.5;3.5" dur="3.8s" repeatCount="indefinite"/></circle>
+      <!-- 知识网络（移至顶部中段，淡化） -->
+      <g fill="#2f6bff" opacity=".5">
+        <circle cx="900" cy="150" r="4"><animate attributeName="r" values="4;6;4" dur="4.6s" repeatCount="indefinite"/></circle>
+        <circle cx="980" cy="120" r="3.5"><animate attributeName="r" values="3.5;5;3.5" dur="5.2s" repeatCount="indefinite"/></circle>
       </g>
 
-      <!-- 现代玻璃幕墙建筑群 -->
-      <g>
+      <!-- 现代玻璃幕墙建筑群（淡化为柔和背景） -->
+      <g opacity=".58">
         <!-- 左玻璃塔 -->
         <polygon points="150,360 330,360 330,580 150,580" fill="url(#glass)"/>
         <polygon points="150,360 330,360 312,338 168,338" fill="#cadcf6"/>
@@ -119,7 +114,7 @@ async function submit() {
       <rect x="0" y="580" width="1440" height="10" fill="#a6c7f1"/>
 
       <!-- 流动的成长路径 + 移动光点（舒缓） -->
-      <path id="flowpath" d="M120 645 C320 605 360 720 560 675 C760 630 820 730 1020 685" fill="none" stroke="#2f6bff" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" opacity=".5">
+      <path id="flowpath" d="M120 645 C320 605 360 720 560 675 C760 630 820 730 1020 685" fill="none" stroke="#2f6bff" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" opacity=".3">
         <animate attributeName="stroke-dashoffset" values="0;-140" dur="6s" repeatCount="indefinite"/>
       </path>
       <circle r="6" fill="#2f6bff"><animateMotion dur="9s" repeatCount="indefinite"><mpath href="#flowpath"/></animateMotion></circle>
@@ -214,13 +209,13 @@ async function submit() {
 }
 .auth-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-/* 前景人物插画（沿底部一字排开） */
-.fig { position: absolute; bottom: 0; z-index: 1; pointer-events: none; user-select: none; filter: drop-shadow(0 12px 22px rgba(20, 50, 110, .14)); }
-.fig-classroom { left: 0.5%; height: min(42vh, 340px); }
-.fig-group { left: 20%; bottom: 2%; height: min(30vh, 240px); }
-.fig-coding { left: 39%; height: min(31vh, 250px); }
-@media (max-width: 1280px) { .fig-coding { display: none; } }
-@media (max-width: 1040px) { .fig-group { display: none; } }
+/* 前景人物插画（沿底部一字排开，留白透气） */
+.fig { position: absolute; bottom: 0; z-index: 1; opacity: .92; pointer-events: none; user-select: none; filter: drop-shadow(0 10px 20px rgba(20, 50, 110, .12)); }
+.fig-classroom { left: -1%; height: min(32vh, 258px); }
+.fig-group { left: 21%; bottom: 1%; height: min(22vh, 176px); }
+.fig-coding { left: 37%; height: min(25vh, 200px); }
+@media (max-width: 1300px) { .fig-coding { display: none; } }
+@media (max-width: 1060px) { .fig-group { display: none; } }
 @media (max-width: 920px) { .fig { display: none; } }
 
 .auth-content {

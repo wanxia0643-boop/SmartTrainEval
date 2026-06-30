@@ -124,63 +124,7 @@ async function submit() {
       </path>
       <circle r="6" fill="#2f6bff"><animateMotion dur="9s" repeatCount="indefinite"><mpath href="#flowpath"/></animateMotion></circle>
 
-      <!-- 小组讨论区 -->
-      <g>
-        <!-- 演示白板（柱状图） -->
-        <rect x="318" y="486" width="104" height="74" rx="6" fill="#eef6ff" stroke="#9cc0f5" stroke-width="2"/>
-        <g fill="#2f6bff"><rect x="336" y="524" width="14" height="22"/><rect x="358" y="512" width="14" height="34"/><rect x="380" y="500" width="14" height="46"/></g>
-        <rect x="398" y="500" width="14" height="46" fill="#19a7e6"/>
-        <line x1="370" y1="560" x2="370" y2="584" stroke="#9cc0f5" stroke-width="3"/>
-
-        <!-- 站立讲解（女·马尾，指向白板） -->
-        <path d="M452 700 v-52 a17 17 0 0 1 34 0 v52 Z" fill="#7fa8e6"/>
-        <path d="M433 650 l-46 -22" stroke="#7fa8e6" stroke-width="9" stroke-linecap="round"/>
-        <circle cx="469" cy="606" r="15" fill="#6f9fe6"/>
-        <path d="M455 604 a14 13 0 0 1 28 0 q-14 -9 -28 0 Z" fill="#4f7fd6"/>
-        <path d="M484 604 q13 6 8 30 q-7 -3 -11 -22 Z" fill="#4f7fd6"/>
-
-        <!-- 远端两位（面向观众） -->
-        <!-- 男·短发，举手提问 -->
-        <path d="M520 712 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
-        <path d="M556 678 l16 -30" stroke="#7fa8e6" stroke-width="8" stroke-linecap="round"/>
-        <circle cx="540" cy="654" r="15" fill="#6f9fe6"/>
-        <path d="M526 652 a14 12 0 0 1 28 0 q-14 -8 -28 0 Z" fill="#4f7fd6"/>
-        <!-- 女·短卷发 -->
-        <path d="M626 712 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
-        <circle cx="646" cy="654" r="15" fill="#6f9fe6"/>
-        <path d="M628 656 a18 16 0 0 1 36 0 q-6 -12 -18 -12 q-12 0 -18 12 Z" fill="#4f7fd6"/>
-
-        <!-- 椭圆会议桌 -->
-        <ellipse cx="600" cy="712" rx="150" ry="30" fill="#5b8fe0"/>
-        <ellipse cx="600" cy="706" rx="150" ry="26" fill="#6f9be6"/>
-        <ellipse cx="600" cy="704" rx="120" ry="18" fill="#a9c6ef" opacity=".5"/>
-
-        <!-- 近端两位（背对观众） -->
-        <!-- 女·马尾 -->
-        <path d="M520 752 v-26 a26 26 0 0 1 52 0 v26 Z" fill="#7fa8e6"/>
-        <circle cx="546" cy="700" r="16" fill="#6f9fe6"/>
-        <path d="M534 690 a14 14 0 0 1 24 0 q-12 -6 -24 0 Z" fill="#4f7fd6"/>
-        <path d="M546 712 q-4 18 0 34 q6 -2 6 -20 Z" fill="#4f7fd6"/>
-        <!-- 男 -->
-        <path d="M624 752 v-26 a26 26 0 0 1 52 0 v26 Z" fill="#7fa8e6"/>
-        <circle cx="650" cy="700" r="16" fill="#6f9fe6"/>
-        <path d="M636 694 a15 13 0 0 1 28 0 q-14 -8 -28 0 Z" fill="#4f7fd6"/>
-      </g>
-
-      <!-- 右侧实训工位（屏幕缓和闪烁） -->
-      <g>
-        <rect x="812" y="704" width="200" height="14" rx="4" fill="#5b8fe0"/>
-        <!-- 女·长发 -->
-        <circle cx="858" cy="648" r="15" fill="#6f9fe6"/>
-        <path d="M843 646 a15 14 0 0 1 30 0 l4 30 q-19 8 -38 0 Z" fill="#4f7fd6"/>
-        <path d="M838 700 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
-        <rect x="832" y="672" width="54" height="36" rx="3" fill="#4f86e8"/><rect x="837" y="677" width="44" height="26" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.72;1" dur="4.6s" repeatCount="indefinite"/></rect>
-        <!-- 男 -->
-        <circle cx="952" cy="648" r="15" fill="#6f9fe6"/>
-        <path d="M938 646 a14 12 0 0 1 28 0 q-14 -8 -28 0 Z" fill="#4f7fd6"/>
-        <path d="M932 700 v-30 a20 20 0 0 1 40 0 v30 Z" fill="#7fa8e6"/>
-        <rect x="926" y="672" width="54" height="36" rx="3" fill="#4f86e8"/><rect x="931" y="677" width="44" height="26" rx="2" fill="url(#screen)"><animate attributeName="opacity" values="1;.66;1" dur="5.4s" repeatCount="indefinite"/></rect>
-      </g>
+      <!-- 前景人物改用真实插画素材（见 SVG 外的 .fig 图片） -->
 
       <!-- 漂浮的学士帽 / 书 / 齿轮（舒缓） -->
       <g opacity=".9">
@@ -201,6 +145,10 @@ async function submit() {
         </g>
       </g>
     </svg>
+
+    <!-- 前景人物：unDraw 教学/实训插画（MIT 许可） -->
+    <img class="fig fig-classroom" src="/illus/educator.svg" alt="" aria-hidden="true" />
+    <img class="fig fig-coding" src="/illus/developer-activity.svg" alt="" aria-hidden="true" />
 
     <div class="auth-content">
       <aside class="auth-brand">
@@ -264,6 +212,13 @@ async function submit() {
   background: #e7f0ff;
 }
 .auth-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* 前景人物插画 */
+.fig { position: absolute; bottom: 0; z-index: 1; pointer-events: none; user-select: none; filter: drop-shadow(0 12px 22px rgba(20, 50, 110, .14)); }
+.fig-classroom { left: 1.5%; height: min(44vh, 360px); }
+.fig-coding { left: 26%; height: min(33vh, 264px); }
+@media (max-width: 1180px) { .fig-coding { display: none; } }
+@media (max-width: 920px) { .fig { display: none; } }
 
 .auth-content {
   position: relative;

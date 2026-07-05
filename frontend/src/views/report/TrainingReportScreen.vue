@@ -1790,22 +1790,50 @@ onBeforeUnmount(() => {
   position: absolute;
   z-index: 7;
   left: 50%;
-  bottom: 74px;
-  display: grid;
-  grid-template-columns: 190px minmax(220px, 300px);
-  align-items: end;
-  gap: 12px;
-  width: min(560px, 78%);
+  bottom: 36px;
+  display: block;
+  width: min(420px, 54%);
+  height: 350px;
   transform: translateX(-50%);
-  pointer-events: auto;
+  pointer-events: none;
+}
+
+.digital-human::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 50px;
+  width: 292px;
+  height: 82px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at center, rgba(52, 236, 216, .22), transparent 58%),
+    radial-gradient(ellipse at center, rgba(49, 147, 255, .22), transparent 70%);
+  border: 1px solid rgba(91, 223, 255, .18);
+  border-radius: 50%;
+  filter: blur(.2px);
+}
+
+.digital-human::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 82px;
+  width: 168px;
+  height: 224px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(98, 229, 255, .12), rgba(98, 229, 255, 0));
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 74%, transparent);
 }
 
 .human-orbit {
   position: absolute;
-  left: 68px;
-  bottom: -14px;
-  width: 180px;
+  left: 50%;
+  bottom: 56px;
+  width: 218px;
   height: 48px;
+  transform: translateX(-50%);
   border: 1px solid rgba(69, 213, 255, .48);
   border-radius: 50%;
   box-shadow: 0 0 28px rgba(36, 184, 255, .35), inset 0 0 20px rgba(43, 242, 206, .18);
@@ -1814,23 +1842,32 @@ onBeforeUnmount(() => {
 
 .xingyun-embed,
 .human-fallback {
-  position: relative;
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 38px;
   display: grid;
   place-items: center;
-  height: 250px;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(12, 70, 132, .28), rgba(3, 16, 30, .3));
-  border: 1px solid rgba(80, 208, 255, .22);
-  box-shadow: inset 0 0 28px rgba(21, 152, 255, .16);
+  width: 188px;
+  height: 245px;
+  overflow: visible;
+  transform: translateX(-50%);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  pointer-events: auto;
 }
 
 .xingyun-sdk-container {
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 20px 24px rgba(0, 0, 0, .42)) drop-shadow(0 0 18px rgba(75, 211, 255, .22));
+  transform: scale(1.01);
+  transform-origin: center bottom;
 }
 
 .xingyun-embed.ready {
-  background: rgba(2, 12, 27, .34);
+  background: transparent;
 }
 
 .xingyun-embed.error {
@@ -1839,10 +1876,13 @@ onBeforeUnmount(() => {
 
 .xingyun-status {
   position: absolute;
-  inset: auto 14px 14px;
+  left: 50%;
+  bottom: 14px;
   display: grid;
   gap: 4px;
+  width: 220px;
   padding: 10px 12px;
+  transform: translateX(-50%);
   background: rgba(2, 12, 27, .78);
   border: 1px solid rgba(96, 220, 255, .28);
 }
@@ -1858,8 +1898,8 @@ onBeforeUnmount(() => {
 }
 
 .human-fallback img {
-  width: min(88%, 165px);
-  max-height: 218px;
+  width: min(88%, 166px);
+  max-height: 222px;
   object-fit: contain;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .35)) drop-shadow(0 0 16px rgba(58, 220, 255, .28));
 }
@@ -1896,45 +1936,63 @@ onBeforeUnmount(() => {
 .voice-wave.active i:nth-child(5) { animation-delay: 400ms; }
 
 .human-copy {
-  align-self: center;
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 4px;
+  width: min(340px, 100%);
   min-width: 0;
-  padding: 14px;
-  background: linear-gradient(90deg, rgba(4, 17, 34, .88), rgba(5, 43, 80, .44));
-  border: 1px solid rgba(77, 196, 255, .26);
+  padding: 7px 14px 8px;
+  transform: translateX(-50%);
+  text-align: center;
+  background: linear-gradient(90deg, rgba(4, 17, 34, .2), rgba(4, 17, 34, .82) 20%, rgba(5, 43, 80, .82) 80%, rgba(4, 17, 34, .2));
+  border-top: 1px solid rgba(77, 196, 255, .32);
+  border-bottom: 1px solid rgba(77, 196, 255, .18);
+  pointer-events: none;
 }
 
 .human-copy span {
   color: #68eaff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: .12em;
 }
 
 .human-copy strong {
   display: block;
-  margin: 5px 0 8px;
+  margin: 2px 0 3px;
   color: #fff;
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .human-copy p {
   margin: 0;
   color: rgba(224, 245, 255, .76);
-  font-size: 12px;
-  line-height: 1.65;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .human-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  position: absolute;
+  z-index: 4;
+  left: calc(50% + 124px);
+  bottom: 76px;
+  display: grid;
+  gap: 6px;
+  transform: none;
+  pointer-events: auto;
 }
 
 .human-actions button {
   gap: 5px;
-  min-height: 30px;
-  padding: 0 10px;
-  font-size: 12px;
+  min-height: 28px;
+  padding: 0 9px;
+  font-size: 11px;
+  background: rgba(2, 15, 33, .72);
+  backdrop-filter: blur(8px);
 }
 
 .bottom-metrics {
@@ -2190,7 +2248,8 @@ onBeforeUnmount(() => {
 }
 
 @keyframes orbit {
-  to { transform: rotate(360deg); }
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: .72; }
+  50% { transform: translateX(-50%) scale(1.08); opacity: 1; }
 }
 
 @media (max-width: 1400px) {
@@ -2203,7 +2262,7 @@ onBeforeUnmount(() => {
   }
 
   .digital-human {
-    width: min(520px, 82%);
+    width: min(390px, 58%);
   }
 }
 
@@ -2253,14 +2312,16 @@ onBeforeUnmount(() => {
   }
 
   .digital-human {
-    grid-template-columns: 1fr;
     width: calc(100% - 24px);
+    height: 310px;
     bottom: 52px;
   }
 
   .human-fallback,
   .xingyun-embed {
-    height: 180px;
+    width: 184px;
+    height: 230px;
+    bottom: 78px;
   }
 
   .map-toolbar {

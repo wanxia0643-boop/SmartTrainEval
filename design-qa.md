@@ -3,7 +3,7 @@
 
 **Evidence**
 - Source visual truth path: `C:/Users/昨日青天/AppData/Local/Temp/codex-clipboard-92ac4c63-f997-43bf-a0de-84f8e5c0748f.png`
-- Implementation screenshot path: `E:/SmartTrainEval/.codex-run/report-screen-xingyun.png`
+- Implementation screenshot path: `E:/SmartTrainEval/.codex-run/report-screen-human-position-refined.png`
 - Full-view comparison evidence: `E:/SmartTrainEval/.codex-run/report-screen-comparison.png`
 - Viewport: 1536 x 864, teacher session, `/report-screen`.
 - State: live dashboard with geoJson map, Three.js WebGL scene, CSS2D labels, CSS3D cards, ECharts panels, and MoFa XingYun / XmovAvatar SDK digital human visible.
@@ -29,6 +29,7 @@
 - Compressed top header columns and title typography to prevent heading wrap.
 - Reduced right panel chart heights so the full dashboard fits in 1536 x 864.
 - Changed bottom metric descriptions to two-line wrapping to avoid clipped text.
+- Reworked the MoFa XingYun digital human into a bottom-center presenter stage, with the avatar lowered, the frame removed, and controls moved beside the presenter.
 
 **Follow-up Polish**
 - Replace `frontend/public/geo/training-map.geojson` with an official China/province geoJson if the competition/demo requires exact administrative boundaries.

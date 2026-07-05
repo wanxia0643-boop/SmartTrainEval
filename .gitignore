@@ -12,6 +12,7 @@ frontend/AGENTS.md
 backend/uploads/
 backend/generated/
 backend/app/logs/
+backend/.env
 
 # OS/editor files
 .DS_Store

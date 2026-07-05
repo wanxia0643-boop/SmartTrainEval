@@ -46,6 +46,12 @@ class Settings(BaseSettings):
     llm_base_url: str = ""
     llm_temperature: float = 0.2
 
+    # 魔珐星云数字人（仅在本地 .env / 环境变量中配置真实密钥）
+    xingyun_app_id: str = ""
+    xingyun_app_secret: str = ""
+    xingyun_gateway_server: str = "https://nebula-agent.xingyun3d.com/user/v1/ttsa/session"
+    xingyun_sdk_url: str = "https://media.xingyun3d.com/xingyun3d/general/litesdk/xmovAvatar@latest.js"
+
     @property
     def database_url(self) -> str:
         """SQLAlchemy + PyMySQL 连接串。

@@ -23,6 +23,7 @@ import { listEvalResults } from '../../api/evalResults'
 import { listLlmLogs } from '../../api/llmLogs'
 import { listProjects } from '../../api/projects'
 import { listReports } from '../../api/reports'
+import { getXingyunConfig } from '../../api/xingyun'
 import { useUserStore } from '../../stores/user'
 
 const userStore = useUserStore()
@@ -135,7 +136,14 @@ const barChartRef = ref()
 const lineChartRef = ref()
 const mixChartRef = ref()
 
-const xingyunEmbedUrl = import.meta.env.VITE_MOFA_XINGYUN_EMBED_URL || ''
+const xingyunSdkRef = ref()
+const xingyunEnabled = ref(false)
+const xingyunLoading = ref(false)
+const xingyunReady = ref(false)
+const xingyunError = ref('')
+const xingyunProgress = ref(0)
+
+let xingyunSdk
 
 let renderer
 let labelRenderer
@@ -878,6 +886,69 @@ function toggleMute() {
   isMuted.value = !isMuted.value
 }
 
+function loadXingyunScript(src) {
+  if (window.XmovAvatar) return Promise.resolve()
+  const existed = document.querySelector(`script[src="${src}"]`)
+  if (existed?.dataset.loaded === 'true') return Promise.resolve()
+  if (existed) {
+    return new Promise((resolve, reject) => {
+      existed.addEventListener('load', resolve, { once: true })
+      existed.addEventListener('error', reject, { once: true })
+    })
+  }
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = src
+    script.async = true
+    script.dataset.xingyunSdk = 'true'
+    script.addEventListener('load', () => {
+      script.dataset.loaded = 'true'
+      resolve()
+    }, { once: true })
+    script.addEventListener('error', reject, { once: true })
+    document.head.appendChild(script)
+  })
+}
+
+async function initXingyunAvatar() {
+  xingyunLoading.value = true
+  xingyunError.value = ''
+  try {
+    const config = await getXingyunConfig()
+    xingyunEnabled.value = Boolean(config.enabled)
+    if (!config.enabled) {
+      xingyunError.value = '未配置魔珐星云 App ID / Secret'
+      return
+    }
+    await loadXingyunScript(config.sdk_url)
+    if (!window.XmovAvatar) throw new Error('魔珐星云 SDK 加载后未暴露 XmovAvatar')
+    await nextTick()
+    if (!xingyunSdkRef.value) throw new Error('数字人容器未就绪')
+    xingyunSdk = new window.XmovAvatar({
+      containerId: '#xingyun-avatar-sdk',
+      appId: config.app_id,
+      appSecret: config.app_secret,
+      gatewayServer: config.gateway_server || '',
+      onMessage: (message) => {
+        if (message?.type === 'error') xingyunError.value = message?.message || '数字人消息异常'
+      },
+    })
+    const initResult = xingyunSdk.init?.({
+      onDownloadProgress: (progress) => {
+        xingyunProgress.value = Math.round(Number(progress) || 0)
+      },
+    })
+    if (initResult?.then) await initResult
+    xingyunReady.value = true
+    isSpeaking.value = true
+  } catch (error) {
+    xingyunEnabled.value = true
+    xingyunError.value = error?.message || '魔珐星云数字人初始化失败'
+  } finally {
+    xingyunLoading.value = false
+  }
+}
+
 function refreshCharts() {
   if (!ringChartRef.value) return
   charts.forEach((chart) => chart.dispose())
@@ -1018,6 +1089,7 @@ onMounted(async () => {
   await nextTick()
   initScene()
   refreshCharts()
+  initXingyunAvatar()
   window.addEventListener('resize', resizeCharts)
 })
 
@@ -1039,6 +1111,9 @@ onBeforeUnmount(() => {
   renderer?.dispose?.()
   labelRenderer?.domElement?.remove?.()
   css3dRenderer?.domElement?.remove?.()
+  xingyunSdk?.destroy?.()
+  xingyunSdk?.dispose?.()
+  xingyunSdk?.uninit?.()
 })
 </script>
 
@@ -1156,8 +1231,12 @@ onBeforeUnmount(() => {
 
           <section class="digital-human">
             <div class="human-orbit" aria-hidden="true"></div>
-            <div v-if="xingyunEmbedUrl" class="xingyun-embed">
-              <iframe :src="xingyunEmbedUrl" title="魔珐星云数字人"></iframe>
+            <div v-if="xingyunEnabled" class="xingyun-embed" :class="{ ready: xingyunReady, error: xingyunError }">
+              <div id="xingyun-avatar-sdk" ref="xingyunSdkRef" class="xingyun-sdk-container"></div>
+              <div v-if="xingyunLoading || xingyunError" class="xingyun-status">
+                <strong>{{ xingyunError ? '数字人连接异常' : '魔珐星云加载中' }}</strong>
+                <span>{{ xingyunError || `资源下载 ${xingyunProgress}%` }}</span>
+              </div>
             </div>
             <div v-else class="human-fallback">
               <img src="/illus/educator.svg" alt="魔珐星云数字人演示形象" />
@@ -1167,7 +1246,7 @@ onBeforeUnmount(() => {
             </div>
             <div class="human-copy">
               <span>MOFA XINGYUN</span>
-              <strong>数字人播报</strong>
+              <strong>{{ xingyunReady ? '数字人已接入' : '数字人播报' }}</strong>
               <p>{{ narratorLines[0] }}</p>
             </div>
             <div class="human-actions">
@@ -1745,10 +1824,37 @@ onBeforeUnmount(() => {
   box-shadow: inset 0 0 28px rgba(21, 152, 255, .16);
 }
 
-.xingyun-embed iframe {
+.xingyun-sdk-container {
   width: 100%;
   height: 100%;
-  border: 0;
+}
+
+.xingyun-embed.ready {
+  background: rgba(2, 12, 27, .34);
+}
+
+.xingyun-embed.error {
+  border-color: rgba(255, 104, 120, .5);
+}
+
+.xingyun-status {
+  position: absolute;
+  inset: auto 14px 14px;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  background: rgba(2, 12, 27, .78);
+  border: 1px solid rgba(96, 220, 255, .28);
+}
+
+.xingyun-status strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.xingyun-status span {
+  color: #8edcff;
+  font-size: 11px;
 }
 
 .human-fallback img {

@@ -14,6 +14,7 @@ from app.routers import (
     role,
     upload,
     user,
+    xingyun,
 )
 
 # 汇总路由，统一挂载到 main 中（带 API 前缀）
@@ -30,5 +31,6 @@ api_router.include_router(llm_log.router)
 api_router.include_router(report.router)
 api_router.include_router(ai.router)
 api_router.include_router(upload.router)
+api_router.include_router(xingyun.router)
 
 __all__ = ["api_router"]

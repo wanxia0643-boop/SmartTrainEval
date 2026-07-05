@@ -10,6 +10,7 @@ import TrainingManagement from '../views/teacher/TrainingManagement.vue'
 import StudentArchive from '../views/teacher/StudentArchive.vue'
 import IntelligentEvaluation from '../views/teacher/IntelligentEvaluation.vue'
 import DataReport from '../views/teacher/DataReport.vue'
+import TrainingReportScreen from '../views/report/TrainingReportScreen.vue'
 import IndicatorManagement from '../views/teacher/IndicatorManagement.vue'
 import TrainingCenter from '../views/student/TrainingCenter.vue'
 import MyEvaluation from '../views/student/MyEvaluation.vue'
@@ -74,6 +75,10 @@ export const protectedRoutes = [
   {
     path: 'data-report', name: 'data-report', component: DataReport,
     meta: { title: '数据报表', icon: DataAnalysis, roles: ['teacher', 'admin'] },
+  },
+  {
+    path: 'report-screen', name: 'report-screen', component: TrainingReportScreen,
+    meta: { title: '实训大屏', icon: DataAnalysis, roles: ['teacher', 'enterprise', 'admin'] },
   },
   {
     path: 'project-training', name: 'project-training', component: ProjectTraining,

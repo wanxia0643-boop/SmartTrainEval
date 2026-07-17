@@ -208,7 +208,7 @@ async function submit() {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1400px;
+  max-width: 1180px;
   height: 600px;
   margin: 0 auto;
   overflow: hidden;
@@ -221,7 +221,7 @@ async function submit() {
 .hero-video-layer {
   position: absolute;
   z-index: 0;
-  inset: 0;
+  inset: 0 420px 0 0;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
@@ -231,6 +231,7 @@ async function submit() {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: left center;
   transform: scale(1.05);
   transition: transform 1s ease;
 }
@@ -242,10 +243,10 @@ async function submit() {
   z-index: 20;
   display: grid;
   flex: 1;
-  grid-template-columns: minmax(0, 1fr) 410px;
-  gap: 56px;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 42px;
   align-items: start;
-  padding: 48px 64px 112px;
+  padding: 42px 40px 104px;
 }
 
 .hero-copy {
@@ -257,7 +258,7 @@ async function submit() {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-bottom: 44px;
+  margin-bottom: 32px;
 }
 
 .hero-brand-mark {
@@ -281,7 +282,7 @@ async function submit() {
   margin: 0;
   color: #0a1b33;
   font-family: var(--font-display);
-  font-size: 54px;
+  font-size: 48px;
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: 0;
@@ -324,11 +325,11 @@ async function submit() {
 .login-panel {
   width: 100%;
   padding: 24px;
-  background: rgba(255, 255, 255, .88);
-  border: 1px solid rgba(255, 255, 255, .72);
+  background: rgba(255, 255, 255, .97);
+  border: 1px solid rgba(226, 232, 240, .82);
   border-radius: 26px;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, .1);
-  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .08);
+  backdrop-filter: blur(16px);
   animation: panel-enter .74s .12s cubic-bezier(.22, 1, .36, 1) both;
 }
 
@@ -423,7 +424,7 @@ async function submit() {
   position: absolute;
   z-index: 30;
   bottom: 26px;
-  left: 50%;
+  left: calc((100% - 420px) / 2);
   transform: translateX(-50%);
 }
 
@@ -460,7 +461,7 @@ async function submit() {
 
 .capability-marquee {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1180px;
   margin: 40px auto 0;
   overflow: hidden;
   mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
@@ -506,14 +507,17 @@ async function submit() {
 @keyframes nav-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 1120px) {
-  .hero-content { grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; padding-right: 40px; padding-left: 40px; }
-  .hero-copy h1 { font-size: 46px; }
+  .hero-video-layer { right: 380px; }
+  .hero-content { grid-template-columns: minmax(0, 1fr) 350px; gap: 28px; padding-right: 32px; padding-left: 32px; }
+  .hero-copy h1 { font-size: 43px; }
   .hero-summary { max-width: 460px; }
+  .floating-nav-wrap { left: calc((100% - 380px) / 2); }
 }
 
 @media (max-width: 860px) {
   .epoch-login { padding: 14px 12px 28px; }
   .login-hero { height: auto; min-height: 850px; border-radius: 32px; }
+  .hero-video-layer { right: 0; bottom: auto; height: 360px; }
   .hero-video { object-position: 62% center; }
   .hero-content { grid-template-columns: 1fr; gap: 24px; padding: 30px 28px 116px; }
   .hero-brand { margin-bottom: 26px; }
@@ -521,6 +525,7 @@ async function submit() {
   .hero-copy h1 { font-size: 42px; }
   .hero-summary { margin: 16px 0 20px; }
   .login-panel { max-width: 520px; justify-self: end; }
+  .floating-nav-wrap { left: 50%; }
 }
 
 @media (max-width: 560px) {

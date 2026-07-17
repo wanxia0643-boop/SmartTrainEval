@@ -10,6 +10,7 @@ import requests
 from sqlalchemy import select
 
 from app.core.database import SessionLocal
+from app.models.achievement import TrainAchievement
 from app.models.course_enrollment import CourseEnrollment
 from app.models.user import User
 
@@ -54,14 +55,18 @@ def main() -> None:
     )["items"][0]
     coach = call(tokens["student"], "POST", "/ai/coach/chat", json={
         "course_id": active["course_id"],
+        "achievement_id": current_achievements[0]["id"],
         "project_id": active["id"],
         "message": "提交前应该重点检查哪些材料？",
     })
     assert coach["citations"]
+    assert coach["available"] is True
     precheck = call(
         tokens["student"], "POST", f"/ai/achievements/{current_achievements[0]['id']}/precheck"
     )
     assert precheck["next_actions"]
+    assert precheck["citations"]
+    assert precheck["context_summary"]["indicator_count"] > 0
     class_result = call(tokens["teacher"], "POST", f"/ai/projects/{active['id']}/class-analysis")
     assert class_result["summary"]
     enterprise_achievements = call(
@@ -98,6 +103,12 @@ def main() -> None:
     assert blocked.status_code == 403
 
     outsider_token = login("student08")
+    outsider_precheck = requests.post(
+        f"{BASE_URL}/ai/achievements/{current_achievements[0]['id']}/precheck",
+        headers={"Authorization": f"Bearer {outsider_token}"},
+        timeout=10,
+    )
+    assert outsider_precheck.status_code == 403
     with SessionLocal() as db:
         outsider = db.scalar(select(User).where(User.username == "student08"))
         enrollment = db.scalar(select(CourseEnrollment).where(
@@ -121,6 +132,26 @@ def main() -> None:
             db.add(enrollment)
             db.commit()
 
+    teacher_tasks_before = call(tokens["teacher"], "GET", "/work-items?status=0")["total"]
+    enterprise_tasks_before = call(tokens["enterprise"], "GET", "/work-items?status=0")["total"]
+    draft = call(tokens["student"], "POST", "/achievements", json={
+        "project_id": active["id"],
+        "student_id": 0,
+        "title": "AI workflow smoke-test draft",
+        "content": "Temporary evidence draft used by the repeatable workflow smoke test.",
+        "status": 0,
+    })
+    assert draft["status"] == 0
+    assert draft["submit_time"] is None
+    assert call(tokens["teacher"], "GET", "/work-items?status=0")["total"] == teacher_tasks_before
+    assert call(tokens["enterprise"], "GET", "/work-items?status=0")["total"] == enterprise_tasks_before
+    call(tokens["admin"], "DELETE", f"/achievements/{draft['id']}")
+    with SessionLocal() as db:
+        stored_draft = db.get(TrainAchievement, draft["id"])
+        if stored_draft:
+            db.delete(stored_draft)
+            db.commit()
+
     result = {
         "roles_logged_in": len(tokens),
         "student_projects": len(projects),
@@ -129,6 +160,8 @@ def main() -> None:
         "score_60_40": float(previous_achievement["final_score"]),
         "admin_scoring_blocked": blocked.status_code,
         "unenrolled_project_blocked": forbidden.status_code,
+        "other_student_precheck_blocked": outsider_precheck.status_code,
+        "draft_created_without_review_tasks": True,
         "enterprise_competencies": len(evidence["competencies"]),
         "enterprise_evidence_sources": len(evidence["citations"]),
         "ai_calls_audited": health["total_calls"],

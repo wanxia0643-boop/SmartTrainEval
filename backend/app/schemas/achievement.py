@@ -15,7 +15,7 @@ class AchievementBase(BaseModel):
 
 
 class AchievementCreate(AchievementBase):
-    pass
+    status: int = Field(default=1, ge=0, le=1, description="0-保存草稿 1-正式提交")
 
 
 class AchievementUpdate(BaseModel):

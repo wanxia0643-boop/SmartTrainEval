@@ -6,6 +6,7 @@ from app.schemas.knowledge import Citation
 class CoachRequest(BaseModel):
     course_id: int
     project_id: int | None = None
+    achievement_id: int | None = None
     session_id: int | None = None
     message: str = Field(min_length=1, max_length=4000)
 
@@ -24,4 +25,3 @@ class CoachResponse(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
     next_actions: list[str] = Field(default_factory=list)
     available: bool = True
-

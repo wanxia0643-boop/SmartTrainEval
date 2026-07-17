@@ -64,25 +64,29 @@ def create_achievement(
         raise BusinessException("项目已归档，不能提交成果", code=400)
     data = payload.model_dump()
     data["student_id"] = current.user_id
-    data["status"] = 1
-    data["submit_time"] = datetime.now(timezone.utc)
+    data["status"] = 1 if payload.status == 1 else 0
+    data["submit_time"] = datetime.now(timezone.utc) if payload.status == 1 else None
     obj = achievement_service.create(db, data)
-    complete_work_items(
-        db, assignee_id=current.user_id, biz_type="PROJECT", biz_id=project.id
-    )
-    ensure_work_item(
-        db, assignee_id=project.teacher_id, creator_id=current.user_id,
-        task_type="TEACHER_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
-        title=f"教师评价：{obj.title}", priority=3,
-    )
-    if project.enterprise_id:
-        ensure_work_item(
-            db, assignee_id=project.enterprise_id, creator_id=current.user_id,
-            task_type="ENTERPRISE_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
-            title=f"企业评价：{obj.title}", priority=2,
+    if payload.status == 1:
+        complete_work_items(
+            db, assignee_id=current.user_id, biz_type="PROJECT", biz_id=project.id
         )
+        ensure_work_item(
+            db, assignee_id=project.teacher_id, creator_id=current.user_id,
+            task_type="TEACHER_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
+            title=f"教师评价：{obj.title}", priority=3,
+        )
+        if project.enterprise_id:
+            ensure_work_item(
+                db, assignee_id=project.enterprise_id, creator_id=current.user_id,
+                task_type="ENTERPRISE_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
+                title=f"企业评价：{obj.title}", priority=2,
+            )
     db.commit()
-    return success(data=AchievementOut.model_validate(obj).model_dump(), msg="提交成功")
+    return success(
+        data=AchievementOut.model_validate(obj).model_dump(),
+        msg="提交成功" if payload.status == 1 else "草稿已保存",
+    )
 
 
 @router.get("", summary="成果列表（按角色自动过滤）")
@@ -140,12 +144,15 @@ def update_achievement(
             raise PermissionException("只能修改自己的成果")
         if obj.status in (2, 3):
             raise BusinessException("成果已进入评价流程，不能由学生修改", code=400)
+        requested_status = data.get("status", 1)
+        if requested_status not in (0, 1):
+            raise BusinessException("学生只能保存草稿或提交成果", code=400)
         data = {
             k: v for k, v in data.items()
-            if k in {"title", "content", "attachment_url", "repo_url"}
+            if k in {"title", "content", "attachment_url", "repo_url", "status"}
         }
-        data["status"] = 1
-        data["submit_time"] = datetime.now(timezone.utc)
+        data["status"] = requested_status
+        data["submit_time"] = datetime.now(timezone.utc) if requested_status == 1 else None
     elif is_teacher(current):
         if project.teacher_id != current.user_id:
             raise PermissionException("无权维护该成果")
@@ -154,7 +161,7 @@ def update_achievement(
         raise PermissionException("无权维护该成果")
 
     obj = achievement_service.update(db, obj, data)
-    if is_student(current):
+    if is_student(current) and data.get("status") == 1:
         complete_work_items(
             db, assignee_id=current.user_id, biz_type="PROJECT", biz_id=project.id
         )

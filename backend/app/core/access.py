@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import BusinessException, PermissionException
 from app.models.achievement import TrainAchievement
+from app.models.course import Course
+from app.models.course_enrollment import CourseEnrollment
 from app.models.project import TrainProject
 from app.schemas.auth import CurrentUser
 from app.utils.enums import RoleCode
@@ -35,6 +37,33 @@ def get_project_or_404(db: Session, project_id: int) -> TrainProject:
     return project
 
 
+def get_course_or_404(db: Session, course_id: int) -> Course:
+    course = db.get(Course, course_id)
+    if not course or course.is_deleted == 1:
+        raise BusinessException("课程不存在", code=404)
+    return course
+
+
+def is_course_enrolled(db: Session, course_id: int, student_id: int) -> bool:
+    return db.query(CourseEnrollment).filter(
+        CourseEnrollment.course_id == course_id,
+        CourseEnrollment.student_id == student_id,
+        CourseEnrollment.status == 1,
+        CourseEnrollment.is_deleted == 0,
+    ).first() is not None
+
+
+def ensure_course_read(db: Session, course_id: int, user: CurrentUser) -> Course:
+    course = get_course_or_404(db, course_id)
+    if is_admin(user):
+        return course
+    if is_teacher(user) and course.teacher_id == user.user_id:
+        return course
+    if is_student(user) and is_course_enrolled(db, course_id, user.user_id):
+        return course
+    raise PermissionException("无权访问该课程")
+
+
 def get_achievement_or_404(db: Session, achievement_id: int) -> TrainAchievement:
     achievement = db.get(TrainAchievement, achievement_id)
     if not achievement or achievement.is_deleted == 1:
@@ -50,12 +79,18 @@ def can_read_project(project: TrainProject, user: CurrentUser) -> bool:
     if is_enterprise(user):
         return project.enterprise_id == user.user_id
     if is_student(user):
-        return project.status != 3
+        return False
     return False
 
 
 def ensure_project_read(db: Session, project_id: int, user: CurrentUser) -> TrainProject:
     project = get_project_or_404(db, project_id)
+    if is_student(user):
+        if project.status != 3 and project.course_id and is_course_enrolled(
+            db, project.course_id, user.user_id
+        ):
+            return project
+        raise PermissionException("请先加入项目所属课程")
     if not can_read_project(project, user):
         raise PermissionException("无权访问该项目")
     return project

@@ -1,6 +1,6 @@
 import {
   Briefcase, CollectionTag, DataAnalysis, DocumentChecked, FolderChecked,
-  Histogram, Monitor, OfficeBuilding, Reading, School, Setting, User, UserFilled,
+  Bell, Histogram, MagicStick, Monitor, OfficeBuilding, Reading, School, Setting, User, UserFilled,
 } from '@element-plus/icons-vue'
 import Dashboard from '../views/dashboard/index.vue'
 import Profile from '../views/profile/index.vue'
@@ -22,6 +22,8 @@ import TalentEvaluation from '../views/enterprise/TalentEvaluation.vue'
 import EnterpriseMentor from '../views/enterprise/EnterpriseMentor.vue'
 import PartnerSchools from '../views/enterprise/PartnerSchools.vue'
 import SystemSettings from '../views/admin/SystemSettings.vue'
+import AIWorkbench from '../views/ai/AIWorkbench.vue'
+import WorkCenter from '../views/common/WorkCenter.vue'
 
 export const roleLabels = {
   student: '学生',
@@ -46,6 +48,14 @@ const dashboard = {
 
 export const protectedRoutes = [
   dashboard,
+  {
+    path: 'work-center', name: 'work-center', component: WorkCenter,
+    meta: { title: '任务中心', icon: Bell, roles: ['student', 'teacher', 'enterprise', 'admin'] },
+  },
+  {
+    path: 'ai-workbench', name: 'ai-workbench', component: AIWorkbench,
+    meta: { title: 'AI 实训智能体', icon: MagicStick, roles: ['student', 'teacher', 'enterprise', 'admin'] },
+  },
   {
     path: 'training', name: 'training', component: TrainingCenter,
     meta: { title: '实训中心', icon: Reading, roles: ['student'] },
@@ -76,7 +86,7 @@ export const protectedRoutes = [
   },
   {
     path: 'intelligent-evaluation', name: 'intelligent-evaluation', component: IntelligentEvaluation,
-    meta: { title: '智能评价', icon: DocumentChecked, roles: ['teacher', 'admin'] },
+    meta: { title: '智能评价', icon: DocumentChecked, roles: ['teacher'] },
   },
   {
     path: 'student-archive', name: 'student-archive', component: StudentArchive,

@@ -7,16 +7,8 @@ from sqlalchemy.orm import Session
 from app.models.achievement import TrainAchievement
 from app.models.eval_result import EvalResult
 from app.models.indicator import EvalIndicator
+from app.models.project import TrainProject
 from app.services.base import CRUDBase
-
-# 默认各评价方式等权；可按需调整，如教师评价权重更高
-DEFAULT_TYPE_WEIGHTS: dict[int, Decimal] = {
-    1: Decimal("1"),  # AI
-    2: Decimal("1"),  # 教师
-    3: Decimal("1"),  # 企业导师
-    4: Decimal("1"),  # 学生自评
-}
-
 
 class EvalResultService(CRUDBase[EvalResult]):
     def __init__(self) -> None:
@@ -36,83 +28,66 @@ class EvalResultService(CRUDBase[EvalResult]):
         self,
         db: Session,
         achievement_id: int,
-        type_weights: dict[int, Decimal] | None = None,
     ) -> Decimal | None:
-        """按指标权重汇总成果得分，并回填 train_achievement.final_score。
-
-        计算逻辑（百分制 0-100）：
-          1. 同一指标下若有多条评价（AI/教师/企业导师/自评），按 eval_type 权重求加权平均；
-          2. 将该指标平均分换算为得分率 score / max_score（0~1）；
-          3. 以指标权重 weight 对各指标得分率做加权平均；
-          4. 乘以 100 得到最终得分。该口径与权重是否合计为 100 无关。
-
-        Args:
-            db: 数据库会话。
-            achievement_id: 实训成果ID。
-            type_weights: 各 eval_type 的权重，默认等权。
-
-        Returns:
-            回填后的最终得分；若无有效评价则返回 None（final_score 置空）。
-        """
+        """汇总教师与企业评价；AI和自评不计分，缺少必需评价时保持评价中。"""
         achievement = db.get(TrainAchievement, achievement_id)
         if not achievement or achievement.is_deleted == 1:
             return None
 
-        weights = type_weights or DEFAULT_TYPE_WEIGHTS
-        results = self.list_by_achievement(db, achievement_id)
-
-        # 按指标聚合：indicator_id -> [(score, type_weight), ...]
-        grouped: dict[int, list[tuple[Decimal, Decimal]]] = {}
-        for r in results:
-            tw = weights.get(r.eval_type, Decimal("1"))
-            if tw <= 0:
-                continue
-            grouped.setdefault(r.indicator_id, []).append((Decimal(r.score), tw))
-
-        if not grouped:
+        project = db.get(TrainProject, achievement.project_id)
+        if not project or project.is_deleted == 1:
+            return None
+        indicators = list(db.scalars(select(EvalIndicator).where(
+            EvalIndicator.project_id == project.id,
+            EvalIndicator.status == 1,
+            EvalIndicator.is_deleted == 0,
+        )).all())
+        results = [r for r in self.list_by_achievement(db, achievement_id) if r.eval_type in (2, 3)]
+        if not indicators or not results:
             achievement.final_score = None
-            if achievement.status == 3:
-                achievement.status = 1
+            achievement.status = 2 if results else 1
             db.add(achievement)
             db.commit()
             return None
 
-        # 加载相关指标
-        indicators = db.scalars(
-            select(EvalIndicator).where(
-                EvalIndicator.id.in_(grouped.keys()),
-                EvalIndicator.is_deleted == 0,
-            )
-        ).all()
-        indicator_map = {i.id: i for i in indicators}
+        required_types = [2, 3] if project.enterprise_id else [2]
+        indicator_ids = {item.id for item in indicators}
+        for eval_type in required_types:
+            covered = {r.indicator_id for r in results if r.eval_type == eval_type}
+            if not indicator_ids.issubset(covered):
+                achievement.final_score = None
+                achievement.status = 2
+                db.add(achievement)
+                db.commit()
+                return None
 
-        weighted_ratio_sum = Decimal("0")  # Σ(得分率 × 指标权重)
-        indicator_weight_sum = Decimal("0")  # Σ(指标权重)
+        def role_score(eval_type: int) -> Decimal:
+            weighted = Decimal("0")
+            weight_sum = Decimal("0")
+            for indicator in indicators:
+                values = [Decimal(r.score) for r in results if r.eval_type == eval_type and r.indicator_id == indicator.id]
+                if not values or Decimal(indicator.max_score) <= 0:
+                    continue
+                avg = sum(values, Decimal("0")) / Decimal(len(values))
+                weight = Decimal(indicator.weight) or Decimal("1")
+                weighted += (avg / Decimal(indicator.max_score)) * weight
+                weight_sum += weight
+            return (weighted / weight_sum) * Decimal("100") if weight_sum else Decimal("0")
 
-        for indicator_id, items in grouped.items():
-            indicator = indicator_map.get(indicator_id)
-            if not indicator or Decimal(indicator.max_score) <= 0:
-                continue
-
-            # 该指标的评分按 eval_type 加权平均
-            tw_sum = sum((w for _, w in items), Decimal("0"))
-            if tw_sum <= 0:
-                continue
-            avg_score = sum((s * w for s, w in items), Decimal("0")) / tw_sum
-
-            ratio = avg_score / Decimal(indicator.max_score)  # 0~1
-            ind_weight = Decimal(indicator.weight) or Decimal("1")  # 权重为0时退化为等权
-
-            weighted_ratio_sum += ratio * ind_weight
-            indicator_weight_sum += ind_weight
-
-        if indicator_weight_sum <= 0:
+        teacher_score = role_score(2)
+        if project.enterprise_id:
+            final = teacher_score * Decimal("0.6") + role_score(3) * Decimal("0.4")
+        else:
+            final = teacher_score
+        if final < 0:
+            final = Decimal("0")
+        if final > 100:
+            final = Decimal("100")
+        if final.is_nan():
             achievement.final_score = None
             db.add(achievement)
             db.commit()
             return None
-
-        final = (weighted_ratio_sum / indicator_weight_sum) * Decimal("100")
         final = final.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         achievement.final_score = final
@@ -121,6 +96,22 @@ class EvalResultService(CRUDBase[EvalResult]):
         db.commit()
         db.refresh(achievement)
         return final
+
+    def is_role_complete(self, db: Session, achievement_id: int, eval_type: int) -> bool:
+        achievement = db.get(TrainAchievement, achievement_id)
+        if not achievement:
+            return False
+        required = set(db.scalars(select(EvalIndicator.id).where(
+            EvalIndicator.project_id == achievement.project_id,
+            EvalIndicator.status == 1,
+            EvalIndicator.is_deleted == 0,
+        )).all())
+        covered = set(db.scalars(select(EvalResult.indicator_id).where(
+            EvalResult.achievement_id == achievement_id,
+            EvalResult.eval_type == eval_type,
+            EvalResult.is_deleted == 0,
+        )).all())
+        return bool(required) and required.issubset(covered)
 
 
 eval_result_service = EvalResultService()

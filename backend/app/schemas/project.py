@@ -8,6 +8,7 @@ class ProjectBase(BaseModel):
     project_name: str = Field(..., max_length=150, description="Project name")
     project_code: str = Field(..., max_length=64, description="Unique project code")
     org_id: int | None = Field(default=None, description="Organization ID")
+    course_id: int | None = Field(default=None, description="Owning course ID")
     teacher_id: int = Field(..., description="Teacher user ID")
     enterprise_id: int | None = Field(default=None, description="Enterprise mentor user ID")
     category: str | None = Field(default=None, max_length=50, description="Category")
@@ -24,6 +25,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     project_name: str | None = Field(default=None, max_length=150)
     org_id: int | None = None
+    course_id: int | None = None
     teacher_id: int | None = None
     enterprise_id: int | None = None
     category: str | None = None

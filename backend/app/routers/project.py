@@ -16,6 +16,8 @@ from app.core.deps import get_current_user, require_roles
 from app.core.exceptions import BusinessException
 from app.core.response import success
 from app.models.project import TrainProject
+from app.models.course import Course
+from app.models.course_enrollment import CourseEnrollment
 from app.schemas.auth import CurrentUser
 from app.schemas.project import ProjectCreate, ProjectOut, ProjectUpdate
 from app.services.project_service import project_service
@@ -33,7 +35,15 @@ def _project_filters(stmt, user: CurrentUser):
     if is_enterprise(user):
         return stmt.where(TrainProject.enterprise_id == user.user_id)
     if is_student(user):
-        return stmt.where(TrainProject.status != 3)
+        enrolled_courses = select(CourseEnrollment.course_id).where(
+            CourseEnrollment.student_id == user.user_id,
+            CourseEnrollment.status == 1,
+            CourseEnrollment.is_deleted == 0,
+        )
+        return stmt.where(
+            TrainProject.status != 3,
+            TrainProject.course_id.in_(enrolled_courses),
+        )
     return stmt.where(False)
 
 
@@ -48,7 +58,17 @@ def create_project(
     data = payload.model_dump()
     if is_teacher(current):
         data["teacher_id"] = current.user_id
+    if data.get("course_id"):
+        course = db.get(Course, data["course_id"])
+        if not course or course.is_deleted == 1:
+            raise BusinessException("课程不存在", code=404)
+        if is_teacher(current) and course.teacher_id != current.user_id:
+            raise BusinessException("无权在该课程下创建项目", code=403)
     obj = project_service.create(db, data)
+    if obj.status == 1 and obj.course_id:
+        from app.services.project_workflow_service import create_project_submission_tasks
+        create_project_submission_tasks(db, obj, current.user_id)
+        db.commit()
     return success(data=ProjectOut.model_validate(obj).model_dump(), msg="创建成功")
 
 
@@ -95,6 +115,10 @@ def update_project(
     if is_teacher(current):
         data.pop("teacher_id", None)
     obj = project_service.update(db, obj, data)
+    if obj.status == 1 and obj.course_id:
+        from app.services.project_workflow_service import create_project_submission_tasks
+        create_project_submission_tasks(db, obj, current.user_id)
+        db.commit()
     return success(data=ProjectOut.model_validate(obj).model_dump(), msg="更新成功")
 
 

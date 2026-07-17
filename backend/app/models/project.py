@@ -21,6 +21,9 @@ class TrainProject(Base, TimestampMixin):
     org_id: Mapped[int | None] = mapped_column(
         BigInteger, index=True, comment="Organization ID"
     )
+    course_id: Mapped[int | None] = mapped_column(
+        BigInteger, index=True, comment="Owning course ID"
+    )
     teacher_id: Mapped[int] = mapped_column(
         BigInteger, index=True, nullable=False, comment="Teacher user ID"
     )

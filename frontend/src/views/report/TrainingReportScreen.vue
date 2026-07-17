@@ -120,6 +120,7 @@ const timeRange = ref('term')
 const layers = ref({ flight: true, label: true, marker: true, heat: true, bar: true })
 const isMuted = ref(false)
 const isSpeaking = ref(true)
+const briefingScript = ref('')
 const selectedRegionId = ref('')
 const hoveredInfo = ref(null)
 const projects = ref([])
@@ -320,7 +321,7 @@ const evidenceRows = computed(() =>
 )
 
 const narratorLines = computed(() => [
-  `当前锁定：${selectedRegion.value?.name || '实训地图'}，关联 ${selectedRegion.value?.count || 0} 条成果证据。`,
+  briefingScript.value || `当前锁定：${selectedRegion.value?.name || '实训地图'}，关联 ${selectedRegion.value?.count || 0} 条成果证据。`,
   `项目总量 ${projects.value.length} 项，成果提交 ${submittedAchievements.value.length} 份，综合均分 ${avgScore.value || '--'}。`,
   focusCopy.value,
 ])
@@ -880,6 +881,14 @@ function requestFullscreen() {
 
 function toggleSpeaking() {
   isSpeaking.value = !isSpeaking.value
+  if (!xingyunSdk || !xingyunReady.value) return
+  if (isSpeaking.value) {
+    const text = briefingScript.value || narratorLines.value.join('。')
+    xingyunSdk.speak?.(text, true, true)
+  } else {
+    xingyunSdk.stopSpeak?.()
+    xingyunSdk.stop?.()
+  }
 }
 
 function toggleMute() {
@@ -941,6 +950,7 @@ async function initXingyunAvatar() {
     if (initResult?.then) await initResult
     xingyunReady.value = true
     isSpeaking.value = true
+    if (briefingScript.value) xingyunSdk.speak?.(briefingScript.value, true, true)
   } catch (error) {
     xingyunEnabled.value = true
     xingyunError.value = error?.message || '魔珐星云数字人初始化失败'
@@ -1085,6 +1095,7 @@ watch(regionStats, () => {
 })
 
 onMounted(async () => {
+  briefingScript.value = localStorage.getItem('ste-briefing-script') || ''
   await Promise.all([loadGeoJson(), loadScreenData(true)])
   await nextTick()
   initScene()

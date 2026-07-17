@@ -23,6 +23,7 @@ from app.models.project import TrainProject
 from app.schemas.achievement import AchievementCreate, AchievementOut, AchievementUpdate
 from app.schemas.auth import CurrentUser
 from app.services.achievement_service import achievement_service
+from app.services.work_item_service import complete_work_items, ensure_work_item
 from app.utils.enums import RoleCode
 
 router = APIRouter(prefix="/achievements", tags=["实训成果"])
@@ -66,6 +67,21 @@ def create_achievement(
     data["status"] = 1
     data["submit_time"] = datetime.now(timezone.utc)
     obj = achievement_service.create(db, data)
+    complete_work_items(
+        db, assignee_id=current.user_id, biz_type="PROJECT", biz_id=project.id
+    )
+    ensure_work_item(
+        db, assignee_id=project.teacher_id, creator_id=current.user_id,
+        task_type="TEACHER_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
+        title=f"教师评价：{obj.title}", priority=3,
+    )
+    if project.enterprise_id:
+        ensure_work_item(
+            db, assignee_id=project.enterprise_id, creator_id=current.user_id,
+            task_type="ENTERPRISE_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
+            title=f"企业评价：{obj.title}", priority=2,
+        )
+    db.commit()
     return success(data=AchievementOut.model_validate(obj).model_dump(), msg="提交成功")
 
 
@@ -138,6 +154,34 @@ def update_achievement(
         raise PermissionException("无权维护该成果")
 
     obj = achievement_service.update(db, obj, data)
+    if is_student(current):
+        complete_work_items(
+            db, assignee_id=current.user_id, biz_type="PROJECT", biz_id=project.id
+        )
+        complete_work_items(
+            db, assignee_id=current.user_id, task_type="REDO_ACHIEVEMENT",
+            biz_type="ACHIEVEMENT", biz_id=obj.id,
+        )
+        ensure_work_item(
+            db, assignee_id=project.teacher_id, creator_id=current.user_id,
+            task_type="TEACHER_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
+            title=f"教师评价：{obj.title}", priority=3,
+        )
+        if project.enterprise_id:
+            ensure_work_item(
+                db, assignee_id=project.enterprise_id, creator_id=current.user_id,
+                task_type="ENTERPRISE_REVIEW", biz_type="ACHIEVEMENT", biz_id=obj.id,
+                title=f"企业评价：{obj.title}", priority=2,
+            )
+    elif data.get("status") == 4:
+        complete_work_items(db, biz_type="ACHIEVEMENT", biz_id=obj.id)
+        ensure_work_item(
+            db, assignee_id=obj.student_id, creator_id=current.user_id,
+            task_type="REDO_ACHIEVEMENT", biz_type="ACHIEVEMENT", biz_id=obj.id,
+            title=f"整改并重新提交：{obj.title}", priority=3,
+            description="成果已被退回，请根据评价意见修改后重新提交。",
+        )
+    db.commit()
     return success(data=AchievementOut.model_validate(obj).model_dump(), msg="更新成功")
 
 

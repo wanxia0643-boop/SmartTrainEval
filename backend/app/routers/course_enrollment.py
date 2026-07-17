@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_roles
 from app.core.exceptions import BusinessException
 from app.core.response import success
 from app.models.course import Course
@@ -12,6 +12,9 @@ from app.schemas.auth import CurrentUser
 from app.schemas.course import CourseOut
 from app.schemas.course_enrollment import CourseEnrollmentCreate, CourseEnrollmentOut
 from app.services.course_enrollment_service import course_enrollment_service
+from app.services.project_workflow_service import create_project_submission_tasks
+from app.models.project import TrainProject
+from app.utils.enums import RoleCode
 
 router = APIRouter(prefix="/course-enrollments", tags=["课程选课"])
 
@@ -20,7 +23,7 @@ router = APIRouter(prefix="/course-enrollments", tags=["课程选课"])
 def enroll_course(
     payload: CourseEnrollmentCreate,
     db: Session = Depends(get_db),
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_roles(RoleCode.STUDENT)),
 ):
     """学生通过课程编码加入课程。"""
     # 查找课程
@@ -49,6 +52,14 @@ def enroll_course(
             raise BusinessException("课程人数已满", code=409)
 
     enrollment = course_enrollment_service.enroll(db, course.id, current.user_id)
+    projects = db.query(TrainProject).filter(
+        TrainProject.course_id == course.id,
+        TrainProject.status == 1,
+        TrainProject.is_deleted == 0,
+    ).all()
+    for project in projects:
+        create_project_submission_tasks(db, project, course.teacher_id)
+    db.commit()
     return success(data=CourseEnrollmentOut.model_validate(enrollment).model_dump(), msg="选课成功")
 
 
@@ -58,7 +69,7 @@ def list_enrolled_courses(
     page_size: int = Query(10, ge=1, le=100, description="每页数量"),
     keyword: str | None = Query(None, description="搜索关键词（课程名称/编码）"),
     db: Session = Depends(get_db),
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_roles(RoleCode.STUDENT)),
 ):
     """获取学生已选课程列表。"""
     offset = (page - 1) * page_size
@@ -111,7 +122,7 @@ def list_enrolled_courses(
 def drop_course(
     enrollment_id: int,
     db: Session = Depends(get_db),
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_roles(RoleCode.STUDENT)),
 ):
     """学生退课。"""
     enrollment = db.get(CourseEnrollment, enrollment_id)

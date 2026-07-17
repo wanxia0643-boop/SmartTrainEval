@@ -4,12 +4,14 @@ from fastapi import APIRouter
 from app.routers import (
     achievement,
     ai,
+    ai_agent,
     auth,
     course,
     course_enrollment,
     course_folder,
     eval_result,
     indicator,
+    knowledge,
     llm_log,
     org,
     project,
@@ -17,6 +19,7 @@ from app.routers import (
     role,
     upload,
     user,
+    work_item,
     xingyun,
 )
 
@@ -32,11 +35,14 @@ api_router.include_router(course_enrollment.router)
 api_router.include_router(course_folder.router)
 api_router.include_router(achievement.router)
 api_router.include_router(indicator.router)
+api_router.include_router(knowledge.router)
 api_router.include_router(eval_result.router)
 api_router.include_router(llm_log.router)
 api_router.include_router(report.router)
 api_router.include_router(ai.router)
+api_router.include_router(ai_agent.router)
 api_router.include_router(upload.router)
 api_router.include_router(xingyun.router)
+api_router.include_router(work_item.router)
 
 __all__ = ["api_router"]

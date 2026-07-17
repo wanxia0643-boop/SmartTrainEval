@@ -1,4 +1,5 @@
 """AI-assisted review routes."""
+import json
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
@@ -13,6 +14,7 @@ from app.core.response import success
 from app.schemas.ai_review import AIReviewRequest
 from app.schemas.auth import CurrentUser
 from app.services.llm_log_service import llm_log_service
+from app.models.ai_agent import AIAnalysis
 from app.utils.enums import RoleCode
 from app.utils.file_extract import extract_text
 from app.utils.logger import logger
@@ -98,7 +100,7 @@ def ai_review(
         outcome = ai_evaluator.review(requirement, content)
     except Exception as exc:
         logger.exception("AI review failed")
-        llm_log_service.create(db, {
+        log = llm_log_service.create(db, {
             "user_id": current.user_id,
             "biz_type": "ACHIEVEMENT_REVIEW",
             "biz_id": payload.achievement_id,
@@ -106,12 +108,21 @@ def ai_review(
             "status": 0,
             "error_msg": str(exc)[:1000],
         })
+        fallback = _fallback_result(f"AI 核查失败：{exc}")
+        db.add(AIAnalysis(
+            user_id=current.user_id, scene="ACHIEVEMENT_REVIEW",
+            biz_type="ACHIEVEMENT", biz_id=payload.achievement_id,
+            status=0, result_json=json.dumps(fallback, ensure_ascii=False),
+            citations_json="[]", model_name=settings.llm_model or "unknown",
+            prompt_version="v1", llm_log_id=log.id,
+        ))
+        db.commit()
         return success(
-            data=_fallback_result(f"AI 核查失败：{exc}"),
+            data=fallback,
             msg="AI 核查未完成，已返回人工复核提示",
         )
 
-    llm_log_service.create(db, {
+    log = llm_log_service.create(db, {
         "user_id": current.user_id,
         "biz_type": "ACHIEVEMENT_REVIEW",
         "biz_id": payload.achievement_id,
@@ -124,7 +135,16 @@ def ai_review(
         "duration_ms": outcome.duration_ms,
         "status": 1,
     })
+    result = {**outcome.result.model_dump(), "available": True}
+    db.add(AIAnalysis(
+        user_id=current.user_id, scene="ACHIEVEMENT_REVIEW",
+        biz_type="ACHIEVEMENT", biz_id=payload.achievement_id,
+        status=1, result_json=json.dumps(result, ensure_ascii=False),
+        citations_json="[]", model_name=outcome.model_name,
+        prompt_version="v1", llm_log_id=log.id,
+    ))
+    db.commit()
     return success(
-        data={**outcome.result.model_dump(), "available": True},
+        data=result,
         msg="核查完成",
     )

@@ -25,11 +25,12 @@ from app.models.project import TrainProject
 from app.schemas.auth import CurrentUser
 from app.schemas.eval_result import EvalResultCreate, EvalResultOut, EvalResultUpdate
 from app.services.eval_result_service import eval_result_service
+from app.services.work_item_service import complete_work_items, ensure_work_item
 from app.utils.enums import RoleCode
 
 router = APIRouter(prefix="/eval-results", tags=["评价结果"])
 
-_EVALUATOR_ROLES = (RoleCode.TEACHER, RoleCode.ENTERPRISE, RoleCode.ADMIN)
+_EVALUATOR_ROLES = (RoleCode.TEACHER, RoleCode.ENTERPRISE)
 
 
 def _role_eval_type(user: CurrentUser, requested: int | None) -> int:
@@ -37,7 +38,7 @@ def _role_eval_type(user: CurrentUser, requested: int | None) -> int:
         return 2
     if is_enterprise(user):
         return 3
-    return requested or 2
+    raise PermissionException("当前角色不能参与常规评分")
 
 
 def _eval_scope(stmt, user: CurrentUser):
@@ -82,8 +83,31 @@ def create_eval_result(
     data["evaluator_id"] = current.user_id
     data["eval_type"] = _role_eval_type(current, data.get("eval_type"))
     data["eval_time"] = datetime.now(timezone.utc)
-    obj = eval_result_service.create(db, data)
+    existing = db.scalar(select(EvalResult).where(
+        EvalResult.achievement_id == payload.achievement_id,
+        EvalResult.indicator_id == payload.indicator_id,
+        EvalResult.eval_type == data["eval_type"],
+        EvalResult.evaluator_id == current.user_id,
+        EvalResult.is_deleted == 0,
+    ))
+    if existing:
+        obj = eval_result_service.update(db, existing, data)
+    else:
+        obj = eval_result_service.create(db, data)
     final = eval_result_service.recalc_final_score(db, obj.achievement_id)
+    if eval_result_service.is_role_complete(db, obj.achievement_id, obj.eval_type):
+        task_type = "TEACHER_REVIEW" if obj.eval_type == 2 else "ENTERPRISE_REVIEW"
+        complete_work_items(
+            db, assignee_id=current.user_id, task_type=task_type,
+            biz_type="ACHIEVEMENT", biz_id=obj.achievement_id,
+        )
+    if final is not None:
+        ensure_work_item(
+            db, assignee_id=achievement.student_id, creator_id=current.user_id,
+            task_type="VIEW_FEEDBACK", biz_type="ACHIEVEMENT", biz_id=achievement.id,
+            title=f"查看评价反馈：{achievement.title}", priority=2,
+        )
+    db.commit()
     return success(
         data={**EvalResultOut.model_validate(obj).model_dump(), "final_score": final},
         msg="评价成功",
@@ -139,6 +163,19 @@ def update_eval_result(
 
     obj = eval_result_service.update(db, obj, payload.model_dump(exclude_unset=True))
     final = eval_result_service.recalc_final_score(db, achievement.id)
+    if eval_result_service.is_role_complete(db, achievement.id, obj.eval_type):
+        task_type = "TEACHER_REVIEW" if obj.eval_type == 2 else "ENTERPRISE_REVIEW"
+        complete_work_items(
+            db, assignee_id=current.user_id, task_type=task_type,
+            biz_type="ACHIEVEMENT", biz_id=achievement.id,
+        )
+    if final is not None:
+        ensure_work_item(
+            db, assignee_id=achievement.student_id, creator_id=current.user_id,
+            task_type="VIEW_FEEDBACK", biz_type="ACHIEVEMENT", biz_id=achievement.id,
+            title=f"查看评价反馈：{achievement.title}", priority=2,
+        )
+    db.commit()
     return success(
         data={**EvalResultOut.model_validate(obj).model_dump(), "final_score": final},
         msg="更新成功",

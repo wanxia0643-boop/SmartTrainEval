@@ -1,17 +1,20 @@
 """ORM 模型集中导出，便于 Base.metadata 收集全部表。"""
 from app.models.achievement import TrainAchievement
+from app.models.ai_agent import AIAnalysis, AIMessage, AISession
 from app.models.base import Base, TimestampMixin
 from app.models.course import Course
 from app.models.course_enrollment import CourseEnrollment
 from app.models.course_folder import CourseFolder
 from app.models.eval_result import EvalResult
 from app.models.indicator import EvalIndicator
+from app.models.knowledge import KnowledgeChunk, KnowledgeDocument
 from app.models.llm_log import LlmCallLog
 from app.models.org import Org
 from app.models.project import TrainProject
 from app.models.report import ReportRecord
 from app.models.role import Role
 from app.models.user import User
+from app.models.work_item import WorkItem
 
 __all__ = [
     "Base",
@@ -21,10 +24,17 @@ __all__ = [
     "Org",
     "Course",
     "CourseEnrollment",
+    "CourseFolder",
     "TrainProject",
     "TrainAchievement",
     "EvalIndicator",
     "EvalResult",
     "LlmCallLog",
     "ReportRecord",
+    "WorkItem",
+    "KnowledgeDocument",
+    "KnowledgeChunk",
+    "AISession",
+    "AIMessage",
+    "AIAnalysis",
 ]

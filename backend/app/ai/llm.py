@@ -27,6 +27,8 @@ def get_llm() -> Any:
         "model": settings.llm_model,
         "temperature": settings.llm_temperature,
         "api_key": settings.llm_api_key,
+        "timeout": 30,
+        "max_retries": 1,
     }
     if settings.llm_base_url:
         kwargs["base_url"] = settings.llm_base_url

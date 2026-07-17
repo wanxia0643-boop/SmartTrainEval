@@ -7,6 +7,7 @@ import { listOrgs } from '../../api/orgs'
 import { listRoles } from '../../api/roles'
 import { listUsers } from '../../api/users'
 import { useUserStore } from '../../stores/user'
+import { listCourses } from '../../api/courses'
 
 const userStore = useUserStore()
 
@@ -21,6 +22,7 @@ const query = reactive({ page: 1, page_size: 10 })
 const orgs = ref([])
 const enterprises = ref([])
 const teachers = ref([])
+const courses = ref([])
 
 const enterpriseName = computed(() => {
   const map = new Map(enterprises.value.map((u) => [u.id, u.real_name]))
@@ -40,6 +42,7 @@ const blankForm = () => ({
   project_name: '',
   project_code: '',
   org_id: null,
+  course_id: null,
   teacher_id: null,
   enterprise_id: null,
   category: '',
@@ -103,6 +106,7 @@ function openEdit(row) {
     project_name: row.project_name,
     project_code: row.project_code,
     org_id: row.org_id,
+    course_id: row.course_id,
     teacher_id: row.teacher_id,
     enterprise_id: row.enterprise_id,
     category: row.category || '',
@@ -124,6 +128,7 @@ async function submit() {
       project_name: form.project_name,
       project_code: form.project_code,
       org_id: form.org_id,
+      course_id: form.course_id,
       teacher_id: userStore.role === 'admin' ? form.teacher_id : userStore.userId,
       enterprise_id: form.enterprise_id || null,
       category: form.category || null,
@@ -168,7 +173,8 @@ function handlePageChange(page) {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchOrgs(), fetchEnterprises()])
+  const courseParams = userStore.role === 'teacher' ? { teacher_id: userStore.userId, page: 1, page_size: 100 } : { page: 1, page_size: 100 }
+  await Promise.all([fetchOrgs(), fetchEnterprises(), listCourses(courseParams).then((data) => { courses.value = data.items })])
   await fetchProjects()
 })
 </script>
@@ -192,6 +198,9 @@ onMounted(async () => {
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="project_name" label="项目名称" min-width="180" />
         <el-table-column prop="project_code" label="编码" min-width="120" />
+        <el-table-column label="所属课程" min-width="150">
+          <template #default="{ row }">{{ courses.find((c) => c.id === row.course_id)?.course_name || '未关联' }}</template>
+        </el-table-column>
         <el-table-column v-if="userStore.role === 'admin'" label="负责教师" min-width="110">
           <template #default="{ row }">{{ teacherName(row.teacher_id) }}</template>
         </el-table-column>
@@ -241,6 +250,11 @@ onMounted(async () => {
         <el-form-item label="归属组织">
           <el-select v-model="form.org_id" clearable placeholder="选填" style="width: 100%">
             <el-option v-for="o in orgs" :key="o.id" :label="o.org_name" :value="o.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属课程">
+          <el-select v-model="form.course_id" clearable placeholder="选择课程" style="width: 100%">
+            <el-option v-for="c in courses" :key="c.id" :label="c.course_name" :value="c.id" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="userStore.role === 'admin'" label="负责教师">

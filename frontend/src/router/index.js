@@ -10,6 +10,9 @@ const validRoles = new Set(['student', 'teacher', 'enterprise', 'admin'])
 
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior(_to, _from, savedPosition) {
+    return savedPosition || { top: 0, left: 0 }
+  },
   routes: [
     { path: '/login', name: 'login', component: Login, meta: { public: true } },
     { path: '/', name: 'root', component: MainLayout, redirect: '/dashboard', children: alwaysRoutes },

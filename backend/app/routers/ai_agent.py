@@ -1,6 +1,6 @@
 """Role-specific AI agent business endpoints."""
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
@@ -27,6 +27,7 @@ from app.models.indicator import EvalIndicator
 from app.models.knowledge import KnowledgeDocument
 from app.models.llm_log import LlmCallLog
 from app.models.project import TrainProject
+from app.models.work_item import WorkItem
 from app.schemas.ai_agent import CoachRequest, ProjectDraftRequest
 from app.schemas.auth import CurrentUser
 from app.services.ai_agent_service import invoke_structured
@@ -343,22 +344,162 @@ def ai_health(
     db: Session = Depends(get_db),
     _: CurrentUser = Depends(require_roles(RoleCode.ADMIN)),
 ):
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    recent_logs = list(db.scalars(select(LlmCallLog).where(
+        LlmCallLog.is_deleted == 0,
+    ).order_by(LlmCallLog.id.desc()).limit(1000)).all())
     total = db.scalar(select(func.count()).select_from(LlmCallLog).where(LlmCallLog.is_deleted == 0)) or 0
     success_count = db.scalar(select(func.count()).select_from(LlmCallLog).where(
         LlmCallLog.is_deleted == 0, LlmCallLog.status == 1,
     )) or 0
     failed = total - success_count
     avg_duration = db.scalar(select(func.avg(LlmCallLog.duration_ms)).where(LlmCallLog.is_deleted == 0)) or 0
-    docs_ready = db.scalar(select(func.count()).select_from(KnowledgeDocument).where(
-        KnowledgeDocument.is_deleted == 0, KnowledgeDocument.status == 1,
+
+    last_24h = [item for item in recent_logs if item.create_time and item.create_time >= now - timedelta(hours=24)]
+    recent_success = len([item for item in last_24h if item.status == 1])
+    recent_failed = len(last_24h) - recent_success
+    recent_durations = sorted(item.duration_ms or 0 for item in last_24h)
+    p95_duration = recent_durations[int((len(recent_durations) - 1) * 0.95)] if recent_durations else 0
+
+    scene_map: dict[str, dict] = {}
+    for item in last_24h:
+        scene = item.biz_type or "UNKNOWN"
+        current = scene_map.setdefault(scene, {
+            "scene": scene, "total": 0, "success": 0, "failed": 0,
+            "duration_total_ms": 0, "total_tokens": 0,
+        })
+        current["total"] += 1
+        current["success" if item.status == 1 else "failed"] += 1
+        current["duration_total_ms"] += item.duration_ms or 0
+        current["total_tokens"] += item.total_tokens or 0
+    scene_stats = []
+    for current in sorted(scene_map.values(), key=lambda value: value["total"], reverse=True):
+        current["success_rate"] = round(current["success"] / current["total"] * 100, 1)
+        current["average_duration_ms"] = round(current.pop("duration_total_ms") / current["total"], 1)
+        scene_stats.append(current)
+
+    daily_map = {
+        (day_start - timedelta(days=offset)).date().isoformat(): {"total": 0, "success": 0, "failed": 0}
+        for offset in range(6, -1, -1)
+    }
+    for item in recent_logs:
+        if not item.create_time:
+            continue
+        key = item.create_time.date().isoformat()
+        if key not in daily_map:
+            continue
+        daily_map[key]["total"] += 1
+        daily_map[key]["success" if item.status == 1 else "failed"] += 1
+    daily_calls = [{"date": key, **value} for key, value in daily_map.items()]
+
+    knowledge_rows = db.execute(select(
+        KnowledgeDocument.status, func.count(KnowledgeDocument.id),
+    ).where(KnowledgeDocument.is_deleted == 0).group_by(KnowledgeDocument.status)).all()
+    knowledge_status = {"processing": 0, "ready": 0, "failed": 0, "total": 0}
+    for status, count in knowledge_rows:
+        key = {0: "processing", 1: "ready", 2: "failed"}.get(status)
+        if key:
+            knowledge_status[key] = count
+        knowledge_status["total"] += count
+
+    pending_tasks = db.scalar(select(func.count()).select_from(WorkItem).where(
+        WorkItem.is_deleted == 0, WorkItem.status == 0,
     )) or 0
+    overdue_tasks = db.scalar(select(func.count()).select_from(WorkItem).where(
+        WorkItem.is_deleted == 0, WorkItem.status == 0,
+        WorkItem.due_time.is_not(None), WorkItem.due_time < now,
+    )) or 0
+    high_priority_tasks = db.scalar(select(func.count()).select_from(WorkItem).where(
+        WorkItem.is_deleted == 0, WorkItem.status == 0, WorkItem.priority == 3,
+    )) or 0
+    task_rows = db.execute(select(
+        WorkItem.task_type, func.count(WorkItem.id),
+    ).where(
+        WorkItem.is_deleted == 0, WorkItem.status == 0,
+    ).group_by(WorkItem.task_type)).all()
+
+    achievement_rows = db.execute(select(
+        TrainAchievement.status, func.count(TrainAchievement.id),
+    ).where(TrainAchievement.is_deleted == 0).group_by(TrainAchievement.status)).all()
+    achievement_status = {status: count for status, count in achievement_rows}
+    submitted = sum(achievement_status.get(status, 0) for status in (1, 2, 3, 4))
+    evaluated = achievement_status.get(3, 0)
+    evaluation_rate = round(evaluated / submitted * 100, 1) if submitted else 0
+    active_projects = db.scalar(select(func.count()).select_from(TrainProject).where(
+        TrainProject.is_deleted == 0, TrainProject.status == 1,
+    )) or 0
+
+    recent_rate = round(recent_success / len(last_24h) * 100, 1) if last_24h else 0
+    alerts = []
+    if not settings.llm_api_key:
+        alerts.append({"level": "critical", "title": "大模型未配置", "description": "AI 场景正使用规则降级结果。", "target": "ai"})
+    elif last_24h and recent_rate < 80:
+        alerts.append({"level": "warning", "title": "AI 成功率偏低", "description": f"近 24 小时成功率为 {recent_rate}%，请检查失败记录。", "target": "ai"})
+    if overdue_tasks:
+        alerts.append({"level": "critical", "title": "存在逾期任务", "description": f"共有 {overdue_tasks} 项任务超过截止时间。", "target": "workflow"})
+    if knowledge_status["failed"]:
+        alerts.append({"level": "warning", "title": "知识资料解析失败", "description": f"有 {knowledge_status['failed']} 份资料需要重新处理。", "target": "knowledge"})
+    if submitted and evaluation_rate < 80:
+        alerts.append({"level": "warning", "title": "评价完整率不足", "description": f"当前评价完成率为 {evaluation_rate}%。", "target": "workflow"})
+    if pending_tasks:
+        alerts.append({"level": "info", "title": "业务待办处理中", "description": f"四角色共有 {pending_tasks} 项待办任务。", "target": "workflow"})
+
+    failures = [item for item in recent_logs if item.status == 0][:10]
     return success(data={
         "configured": bool(settings.llm_api_key),
         "model": settings.llm_model,
+        "operational": bool(settings.llm_api_key and recent_logs and recent_logs[0].status == 1),
         "total_calls": total,
         "success_calls": success_count,
         "failed_calls": failed,
         "success_rate": round(success_count / total * 100, 1) if total else 0,
         "average_duration_ms": round(float(avg_duration), 1),
-        "knowledge_documents_ready": docs_ready,
+        "knowledge_documents_ready": knowledge_status["ready"],
+        "recent_24h": {
+            "total_calls": len(last_24h),
+            "success_calls": recent_success,
+            "failed_calls": recent_failed,
+            "success_rate": recent_rate,
+            "average_duration_ms": round(
+                sum(item.duration_ms or 0 for item in last_24h) / len(last_24h), 1,
+            ) if last_24h else 0,
+            "p95_duration_ms": p95_duration,
+            "total_tokens": sum(item.total_tokens or 0 for item in last_24h),
+        },
+        "scene_stats": scene_stats,
+        "daily_calls": daily_calls,
+        "knowledge_status": knowledge_status,
+        "process_health": {
+            "pending_tasks": pending_tasks,
+            "overdue_tasks": overdue_tasks,
+            "high_priority_tasks": high_priority_tasks,
+            "active_projects": active_projects,
+            "submitted_achievements": submitted,
+            "evaluated_achievements": evaluated,
+            "evaluating_achievements": achievement_status.get(2, 0),
+            "returned_achievements": achievement_status.get(4, 0),
+            "evaluation_completion_rate": evaluation_rate,
+            "task_types": [{"task_type": task_type, "count": count} for task_type, count in task_rows],
+        },
+        "alerts": alerts,
+        "recent_failures": [{
+            "id": item.id,
+            "scene": item.biz_type,
+            "biz_id": item.biz_id,
+            "model": item.model_name,
+            "duration_ms": item.duration_ms,
+            "error": (item.error_msg or "未知错误")[:240],
+            "create_time": item.create_time,
+        } for item in failures],
+        "recent_calls": [{
+            "id": item.id,
+            "scene": item.biz_type,
+            "biz_id": item.biz_id,
+            "model": item.model_name,
+            "status": item.status,
+            "duration_ms": item.duration_ms,
+            "total_tokens": item.total_tokens,
+            "create_time": item.create_time,
+        } for item in recent_logs[:12]],
     })

@@ -77,6 +77,17 @@ def main() -> None:
     briefing = call(tokens["enterprise"], "POST", f"/ai/projects/{active['id']}/briefing")
     assert briefing["script"]
     health = call(tokens["admin"], "GET", "/ai/health")
+    assert health["scene_stats"]
+    assert len(health["daily_calls"]) == 7
+    assert "evaluation_completion_rate" in health["process_health"]
+    assert "ready" in health["knowledge_status"]
+
+    governance_blocked = requests.get(
+        f"{BASE_URL}/ai/health",
+        headers={"Authorization": f"Bearer {tokens['teacher']}"},
+        timeout=10,
+    )
+    assert governance_blocked.status_code == 403
 
     blocked = requests.post(
         f"{BASE_URL}/eval-results",
@@ -121,6 +132,8 @@ def main() -> None:
         "enterprise_competencies": len(evidence["competencies"]),
         "enterprise_evidence_sources": len(evidence["citations"]),
         "ai_calls_audited": health["total_calls"],
+        "governance_teacher_blocked": governance_blocked.status_code,
+        "governance_alerts": len(health["alerts"]),
     }
     assert abs(result["score_60_40"] - 74.2) < 0.01
     print(json.dumps(result, ensure_ascii=False))

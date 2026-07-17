@@ -126,7 +126,7 @@ export const protectedRoutes = [
   },
   {
     path: 'system-settings', name: 'system-settings', component: SystemSettings,
-    meta: { title: '系统设置', icon: Setting, roles: ['admin'] },
+    meta: { title: '系统治理', icon: Setting, roles: ['admin'] },
   },
   {
     path: 'profile', name: 'profile', component: Profile,

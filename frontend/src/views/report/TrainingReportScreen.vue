@@ -145,6 +145,29 @@ const xingyunError = ref('')
 const xingyunProgress = ref(0)
 
 let xingyunSdk
+let xingyunReadyTimer
+
+function markXingyunReady() {
+  if (xingyunReady.value || !xingyunSdk) return
+  clearTimeout(xingyunReadyTimer)
+  xingyunReady.value = true
+  xingyunLoading.value = false
+  xingyunError.value = ''
+  xingyunSdk.changeAvatarVisible?.(true)
+  xingyunSdk.setVolume?.(isMuted.value ? 0 : 1)
+  const text = briefingScript.value || narratorLines.value.join('。')
+  if (text) {
+    isSpeaking.value = true
+    xingyunSdk.speak?.(text, true, true)
+  }
+}
+
+function failXingyun(message) {
+  clearTimeout(xingyunReadyTimer)
+  xingyunReady.value = false
+  xingyunLoading.value = false
+  xingyunError.value = message || '魔珐星云数字人初始化失败'
+}
 
 let renderer
 let labelRenderer
@@ -893,6 +916,7 @@ function toggleSpeaking() {
 
 function toggleMute() {
   isMuted.value = !isMuted.value
+  xingyunSdk?.setVolume?.(isMuted.value ? 0 : 1)
 }
 
 function loadXingyunScript(src) {
@@ -920,7 +944,10 @@ function loadXingyunScript(src) {
 }
 
 async function initXingyunAvatar() {
+  clearTimeout(xingyunReadyTimer)
   xingyunLoading.value = true
+  xingyunReady.value = false
+  xingyunProgress.value = 0
   xingyunError.value = ''
   try {
     const config = await getXingyunConfig()
@@ -939,23 +966,37 @@ async function initXingyunAvatar() {
       appSecret: config.app_secret,
       gatewayServer: config.gateway_server || '',
       onMessage: (message) => {
-        if (message?.type === 'error') xingyunError.value = message?.message || '数字人消息异常'
+        const code = Number(message?.code || 0)
+        if ((message?.type === 'error' || (code && code !== 50002)) && !xingyunReady.value) {
+          failXingyun(message?.message || `数字人连接异常（${code}）`)
+        }
       },
+      onVoiceStateChange: (status) => {
+        if (status === 'start' || status === 'voice_start') isSpeaking.value = true
+        if (status === 'end' || status === 'voice_end') isSpeaking.value = false
+      },
+      onStartSessionWarning: (message) => {
+        if (!xingyunReady.value) failXingyun(message?.message || '数字人应用配置不可用')
+      },
+      hardwareAcceleration: 'prefer-hardware',
+      enableLogger: import.meta.env.DEV,
     })
     const initResult = xingyunSdk.init?.({
+      initModel: 'normal',
       onDownloadProgress: (progress) => {
         xingyunProgress.value = Math.round(Number(progress) || 0)
+        if (xingyunProgress.value >= 100) markXingyunReady()
       },
     })
-    if (initResult?.then) await initResult
-    xingyunReady.value = true
-    isSpeaking.value = true
-    if (briefingScript.value) xingyunSdk.speak?.(briefingScript.value, true, true)
+    if (initResult?.then) {
+      await initResult
+    }
+    xingyunReadyTimer = window.setTimeout(() => {
+      if (!xingyunReady.value) failXingyun('数字人资源加载超时，请检查应用配置或网络')
+    }, 20_000)
   } catch (error) {
     xingyunEnabled.value = true
-    xingyunError.value = error?.message || '魔珐星云数字人初始化失败'
-  } finally {
-    xingyunLoading.value = false
+    failXingyun(error?.message)
   }
 }
 
@@ -1122,6 +1163,7 @@ onBeforeUnmount(() => {
   renderer?.dispose?.()
   labelRenderer?.domElement?.remove?.()
   css3dRenderer?.domElement?.remove?.()
+  clearTimeout(xingyunReadyTimer)
   xingyunSdk?.destroy?.()
   xingyunSdk?.dispose?.()
   xingyunSdk?.uninit?.()
@@ -1242,11 +1284,11 @@ onBeforeUnmount(() => {
 
           <section class="digital-human">
             <div class="human-orbit" aria-hidden="true"></div>
-            <div v-if="xingyunEnabled" class="xingyun-embed" :class="{ ready: xingyunReady, error: xingyunError }">
+            <div v-if="xingyunEnabled && !xingyunError" class="xingyun-embed" :class="{ ready: xingyunReady }">
               <div id="xingyun-avatar-sdk" ref="xingyunSdkRef" class="xingyun-sdk-container"></div>
-              <div v-if="xingyunLoading || xingyunError" class="xingyun-status">
-                <strong>{{ xingyunError ? '数字人连接异常' : '魔珐星云加载中' }}</strong>
-                <span>{{ xingyunError || `资源下载 ${xingyunProgress}%` }}</span>
+              <div v-if="xingyunLoading" class="xingyun-status">
+                <strong>魔珐星云加载中</strong>
+                <span>资源下载 {{ xingyunProgress }}%</span>
               </div>
             </div>
             <div v-else class="human-fallback">
@@ -1254,10 +1296,14 @@ onBeforeUnmount(() => {
               <div class="voice-wave" :class="{ active: isSpeaking && !isMuted }">
                 <i></i><i></i><i></i><i></i><i></i>
               </div>
+              <div v-if="xingyunError" class="xingyun-status">
+                <strong>数字人连接异常</strong>
+                <span>{{ xingyunError }}</span>
+              </div>
             </div>
             <div class="human-copy">
               <span>MOFA XINGYUN</span>
-              <strong>{{ xingyunReady ? '数字人已接入' : '数字人播报' }}</strong>
+              <strong>{{ xingyunError ? '备用讲解员' : (xingyunReady ? '数字人已接入' : '数字人播报') }}</strong>
               <p>{{ narratorLines[0] }}</p>
             </div>
             <div class="human-actions">
@@ -1875,6 +1921,13 @@ onBeforeUnmount(() => {
   filter: drop-shadow(0 20px 24px rgba(0, 0, 0, .42)) drop-shadow(0 0 18px rgba(75, 211, 255, .22));
   transform: scale(1.01);
   transform-origin: center bottom;
+}
+
+.xingyun-sdk-container :deep(canvas) {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
 }
 
 .xingyun-embed.ready {

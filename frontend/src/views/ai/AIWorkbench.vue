@@ -46,8 +46,8 @@ const difficultyOptions = [
 ]
 
 const roleTitle = computed(() => ({
-  student: 'AI 实训学伴', teacher: 'AI 教学助手', enterprise: 'AI 岗位证据助手', admin: 'AI 运行治理',
-}[userStore.role] || 'AI 实训智能体'))
+  student: '实训学伴', teacher: '教学设计助手', enterprise: '岗位评价助手', admin: '智能服务治理',
+}[userStore.role] || '教学助手'))
 const roleCaption = computed(() => ({
   student: '基于课程资料进行启发式辅导、任务拆解和提交前自检。',
   teacher: '生成项目与评价草案，分析班级学情并形成教学干预建议。',
@@ -230,8 +230,8 @@ onMounted(loadContext)
 <template>
   <section class="feature-page ai-page">
     <div class="feature-hero">
-      <div><p class="page-eyebrow">AI TRAINING AGENT</p><h2>{{ roleTitle }}</h2><p>{{ roleCaption }}</p></div>
-      <el-tag :type="health?.configured === false ? 'warning' : 'success'" effect="plain">{{ health?.configured === false ? '规则降级可用' : '人机协同模式' }}</el-tag>
+      <div><p class="page-eyebrow">ASSISTANT</p><h2>{{ roleTitle }}</h2><p>{{ roleCaption }}</p></div>
+      <el-tag :type="health?.configured === false ? 'warning' : 'success'" effect="plain">{{ health?.configured === false ? '基础规则可用' : '结果需人工确认' }}</el-tag>
     </div>
 
     <div class="context-bar data-panel">
@@ -259,10 +259,10 @@ onMounted(loadContext)
 
     <div v-else-if="userStore.role === 'teacher'" class="ai-grid">
       <article class="data-panel tool-panel project-designer">
-        <div class="panel-heading"><div><h3>AI 项目设计</h3><span>从教学目标生成可编辑的项目、里程碑、提交要求和评价量规</span></div></div>
+        <div class="panel-heading"><div><h3>项目设计</h3><span>根据教学目标整理项目、里程碑、提交要求和评价量规</span></div></div>
         <el-input v-model="objective" type="textarea" :rows="5" placeholder="描述课程目标、学生基础、希望完成的真实任务和最终产出" />
         <div class="design-actions">
-          <span>生成后先由教师审核，不会直接向学生发布。</span>
+          <span>草案先由教师审核，不会直接向学生发布。</span>
           <el-button type="primary" :icon="MagicStick" :loading="loading" @click="runAction('draft')">生成可编辑草案</el-button>
         </div>
       </article>

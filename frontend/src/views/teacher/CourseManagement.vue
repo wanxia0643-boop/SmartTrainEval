@@ -1020,4 +1020,21 @@ onMounted(() => {
   max-height: 85vh;
   object-fit: contain;
 }
+
+/* Compact course library, aligned with the main workbench. */
+.course-management { min-height: 0; padding: 0; background: transparent; }
+.page-header { margin-bottom: 16px; }
+.btn-add { padding: 8px 14px; background: #1677ff; border-radius: 4px; box-shadow: none; font-size: 13px; transition: background-color 140ms ease; }
+.btn-add:hover { background: #3c8cff; transform: none; box-shadow: none; }
+.header-right { gap: 10px; }.search-input { width: 240px; }.search-input :deep(.el-input__wrapper) { border-radius: 4px; }
+.course-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.folder-card { min-height: 116px; background: #fff; border: 1px solid #e5e6eb; border-radius: 6px; transition: border-color 140ms ease; }
+.folder-card:hover { border-color: #91caff; transform: none; box-shadow: none; }.folder-cover { gap: 12px; padding: 18px; }.folder-icon { width: 58px; height: 44px; }.folder-name { color: #1f2329; font-size: 16px; font-weight: 600; }
+.folder-hover-actions { padding: 5px 8px; background: #fff; border: 1px solid #e5e6eb; border-radius: 4px; transition: opacity 140ms ease; }
+.course-card { background: #fff; border: 1px solid #e5e6eb; border-radius: 6px; box-shadow: none; transition: border-color 140ms ease; }.course-card:hover { border-color: #91caff; transform: none; box-shadow: none; }.course-card-pinned { border: 1px solid #1677ff; }
+.pinned-badge { top: 8px; left: 8px; padding: 3px 7px; background: #1677ff; border-radius: 3px; font-size: 11px; font-weight: 500; }
+.card-cover { height: 142px; background: #f2f3f5; }.cover-img { transition: none; }.course-card:hover .cover-img { transform: none; }.cover-default { color: #c0c4cc; background: #f2f3f5; }
+.card-hover-actions { padding: 8px 10px; background: #fff; border-bottom: 1px solid #e5e6eb; border-radius: 0; transition: opacity 140ms ease; }.hover-action-btn, .drag-icon { color: #1677ff; }.hover-action-btn:hover { color: #3c8cff; }
+.progress-overlay { padding: 8px 12px; background: rgba(31, 35, 41, .82); }.pagination { margin-top: 20px; }
+.card-body { padding: 12px 14px; }.course-title { margin: 0 0 5px; color: #1f2329; font-size: 14px; font-weight: 600; }.course-teacher { color: #86909c; font-size: 12px; }
 </style>

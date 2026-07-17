@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { Bell, FullScreen, Menu } from '@element-plus/icons-vue'
+import { ArrowDown, Bell, FullScreen, Menu } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
@@ -32,7 +32,7 @@ function openNotifications() { ElMessage.info('通知中心已同步 3 条未读
       </button>
       <h1>{{ title }}</h1>
       <span class="header-divider" aria-hidden="true"></span>
-      <span class="header-context">软件实训智能评价系统</span>
+      <span class="header-context">{{ roleName }}工作台</span>
     </div>
     <div class="header-actions">
       <el-tooltip content="全屏显示" placement="bottom">
@@ -48,8 +48,8 @@ function openNotifications() { ElMessage.info('通知中心已同步 3 条未读
       <el-dropdown trigger="click">
         <button class="profile-trigger" type="button" aria-label="打开用户菜单">
           <el-avatar :size="32" class="user-avatar">{{ userStore.initials }}</el-avatar>
-          <span class="profile-name">{{ userStore.name }}</span>
-          <el-tag size="small" effect="plain" type="primary">{{ roleName }}</el-tag>
+          <span class="profile-copy"><strong class="profile-name">{{ userStore.name }}</strong><small>{{ roleName }}</small></span>
+          <el-icon class="profile-arrow"><ArrowDown /></el-icon>
         </button>
         <template #dropdown>
           <el-dropdown-menu>

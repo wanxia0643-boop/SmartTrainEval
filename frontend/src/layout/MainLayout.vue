@@ -13,7 +13,7 @@ const permissionStore = usePermissionStore()
 onMounted(() => permissionStore.setMenus(userStore.role))
 watch(() => userStore.role, (role) => permissionStore.setMenus(role), { immediate: true })
 const pageTitle = computed(() => {
-  if (route.name === 'dashboard' && userStore.role === 'teacher') return '评价指挥中心'
+  if (route.name === 'dashboard' && userStore.role === 'teacher') return '工作台'
   return route.meta.title || '工作台'
 })
 </script>

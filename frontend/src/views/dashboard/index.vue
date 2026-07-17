@@ -22,9 +22,9 @@ let abilityChart
 const ACH_STATUS = { 0: '草稿', 1: '已提交', 2: '评价中', 3: '已评价', 4: '退回重做' }
 
 const roleCopy = {
-  student: { greeting: '今天的实训目标，稳稳推进', caption: '按计划完成任务，及时吸收评价反馈。', queue: '我的实训成果', role: '学生工作台' },
-  enterprise: { greeting: '人才培养正在发生在项目现场', caption: '关注优先事项，把企业反馈变成学习者成长的下一步。', queue: '待评价成果', role: '成长工作室' },
-  admin: { greeting: '平台运行平稳，组织协同在线', caption: '关注系统使用与评价质量，及时完成平台基础配置。', queue: '最新提交成果', role: '运营工作台' },
+  student: { greeting: '今日实训', caption: '查看当前任务、提交进度和最新评价反馈。', queue: '我的实训成果', role: '学生工作台' },
+  enterprise: { greeting: '项目协同', caption: '处理项目评价任务，查看学生岗位能力证据。', queue: '待评价成果', role: '企业导师工作台' },
+  admin: { greeting: '平台概览', caption: '查看组织、项目、成果与评价流程运行情况。', queue: '最新提交成果', role: '管理员工作台' },
 }
 const copy = ref(roleCopy[userStore.role] || roleCopy.admin)
 const todayText = ref('')
@@ -205,7 +205,7 @@ watch(() => userStore.role, () => loadData())
     <div class="dashboard-hero">
       <div>
         <p class="page-eyebrow">{{ copy.role }}</p>
-        <h2>{{ copy.greeting }}，{{ userStore.name }}</h2>
+        <h2>{{ copy.greeting }}</h2>
         <p>{{ copy.caption }}</p>
       </div>
       <div class="hero-date"><el-icon><Timer /></el-icon> {{ todayText }}</div>

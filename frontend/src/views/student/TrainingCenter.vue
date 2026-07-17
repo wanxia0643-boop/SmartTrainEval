@@ -281,11 +281,11 @@ onMounted(() => loadAll({ preserveProject: false }))
   <section class="feature-page student-training-page" v-loading="loading">
     <div class="feature-hero">
       <div>
-        <p class="page-eyebrow">STUDENT · GUIDED PRACTICE</p>
-        <h2>AI 实训工作台</h2>
+        <p class="page-eyebrow">STUDENT · PRACTICE</p>
+        <h2>实训工作台</h2>
         <p>围绕真实项目完成任务拆解、过程辅导、成果草稿与提交前证据自检。</p>
       </div>
-      <el-tag type="success" effect="plain">AI 辅助，不代写成果</el-tag>
+      <el-tag type="success" effect="plain">过程辅导，不代写成果</el-tag>
     </div>
 
     <section class="stats-strip" aria-label="学生实训进度">
@@ -370,18 +370,18 @@ onMounted(() => loadAll({ preserveProject: false }))
 
           <article class="data-panel coach-panel">
             <div class="panel-heading">
-              <div><h3>AI 实训学伴</h3><span>结合当前项目、成果草稿和课程资料启发式辅导</span></div>
+              <div><h3>实训学伴</h3><span>结合当前项目、成果草稿和课程资料提供分步辅导</span></div>
               <ChatDotRound />
             </div>
             <div class="coach-list" v-loading="coachLoading">
               <div v-if="!coachItems.length" class="coach-welcome">
                 <MagicStick />
                 <strong>从一个具体问题开始</strong>
-                <span>AI 会给出问题定位、分步提示、资料引用和下一步行动。</span>
+                <span>根据项目和课程资料给出问题定位、分步提示与下一步行动。</span>
                 <button v-for="prompt in PROMPTS" :key="prompt" type="button" @click="sendCoach(prompt)">{{ prompt }}</button>
               </div>
               <div v-for="(item, index) in coachItems" :key="index" class="coach-message" :class="item.role">
-                <strong>{{ item.role === 'user' ? '我' : 'AI 学伴' }}</strong>
+                <strong>{{ item.role === 'user' ? '我' : '实训学伴' }}</strong>
                 <p>{{ item.content }}</p>
                 <template v-if="item.role === 'assistant'">
                   <div v-if="item.hints?.length" class="coach-section"><span>分步提示</span><ol><li v-for="hint in item.hints" :key="hint">{{ hint }}</li></ol></div>
@@ -399,7 +399,7 @@ onMounted(() => loadAll({ preserveProject: false }))
 
         <article class="data-panel precheck-panel">
           <div class="panel-heading">
-            <div><h3>提交前 AI 自检</h3><span>依据项目量规和课程规范检查证据完整性，不计入最终成绩</span></div>
+            <div><h3>提交前自检</h3><span>依据项目量规和课程规范检查证据完整性，不计入最终成绩</span></div>
             <el-button type="primary" :icon="MagicStick" :loading="precheckLoading" :disabled="!editable" @click="runPrecheck">{{ currentPrecheck ? '重新自检' : '开始自检' }}</el-button>
           </div>
           <template v-if="currentPrecheck">

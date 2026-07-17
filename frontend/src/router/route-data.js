@@ -54,7 +54,7 @@ export const protectedRoutes = [
   },
   {
     path: 'ai-workbench', name: 'ai-workbench', component: AIWorkbench,
-    meta: { title: 'AI 实训智能体', icon: MagicStick, roles: ['student', 'teacher', 'enterprise', 'admin'] },
+    meta: { title: '教学助手', icon: MagicStick, roles: ['student', 'teacher', 'enterprise', 'admin'] },
   },
   {
     path: 'training', name: 'training', component: TrainingCenter,

@@ -2,8 +2,6 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  CaretBottom,
-  CaretTop,
   CircleCheck,
   DocumentChecked,
   FolderOpened,
@@ -197,7 +195,6 @@ function goToReview(row) {
           <p>{{ item.label }}</p>
           <strong>{{ item.value }}<small>{{ item.unit }}</small></strong>
           <span class="teacher-metric-card__trend" :class="`is-${item.direction}`">
-            <el-icon><component :is="item.direction === 'up' ? CaretTop : CaretBottom" /></el-icon>
             {{ item.comparison }}
           </span>
         </div>
@@ -236,15 +233,15 @@ function goToReview(row) {
 
 <style scoped>
 .teacher-dashboard { max-width: 1480px; margin: 0 auto; }
-.teacher-dashboard__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-.teacher-dashboard__heading p { margin: 0 0 6px; color: #165DFF; font-size: 12px; font-weight: 650; }
-.teacher-dashboard__heading h2 { margin: 0; color: #1D2940; font-size: 24px; line-height: 1.2; letter-spacing: -.02em; }
+.teacher-dashboard__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.teacher-dashboard__heading p { display: none; }
+.teacher-dashboard__heading h2 { margin: 0; color: #1f2329; font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: 0; }
 .teacher-dashboard__heading > span { padding-bottom: 2px; color: #778399; font-size: 12px; }
-.teacher-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 16px; overflow: hidden; background: #fff; border: 1px solid #E8EDF5; border-radius: 9px; }
-.teacher-metric-card { display: flex; gap: 13px; min-width: 0; padding: 20px; border-right: 1px solid #E8EDF5; }.teacher-metric-card:last-child { border-right: 0; }
-.teacher-metric-card__icon { display: grid; flex: 0 0 40px; width: 40px; height: 40px; place-items: center; border-radius: 8px; font-size: 19px; }.is-blue { color: #165DFF; background: #EDF3FF; }.is-cyan { color: #0F9FC4; background: #E9F8FC; }.is-violet { color: #7557D9; background: #F1EDFF; }.is-green { color: #1D9B72; background: #EAF8F2; }
-.teacher-metric-card__content { min-width: 0; }.teacher-metric-card__content p { margin: 0 0 5px; overflow: hidden; color: #66738A; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }.teacher-metric-card__content strong { display: block; color: #1D2940; font-size: 27px; line-height: 1; }.teacher-metric-card__content small { margin-left: 3px; font-size: 12px; font-weight: 500; }.teacher-metric-card__trend { display: flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 11px; }.teacher-metric-card__trend.is-up { color: #15956D; }.teacher-metric-card__trend.is-down { color: #D88716; }
-.teacher-chart-grid { display: grid; grid-template-columns: minmax(0, 1.34fr) minmax(330px, .66fr); gap: 16px; }.teacher-panel { min-width: 0; background: #fff; border: 1px solid #E8EDF5; border-radius: 9px; }.teacher-panel__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 18px 20px 6px; }.teacher-panel__heading h3 { margin: 0; color: #25324A; font-size: 15px; font-weight: 650; }.teacher-panel__heading span { display: block; margin-top: 5px; color: #778399; font-size: 12px; }.teacher-panel__heading > strong { padding-top: 2px; color: #165DFF; font-size: 14px; }
+.teacher-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 14px; overflow: hidden; background: #fff; border: 1px solid #e5e6eb; border-radius: 6px; }
+.teacher-metric-card { display: flex; gap: 12px; min-width: 0; padding: 16px; border-right: 1px solid #e5e6eb; }.teacher-metric-card:last-child { border-right: 0; }
+.teacher-metric-card__icon { display: grid; flex: 0 0 34px; width: 34px; height: 34px; place-items: center; border-radius: 5px; font-size: 17px; }.is-blue { color: #1677ff; background: #eaf3ff; }.is-cyan { color: #08979c; background: #e6fffb; }.is-violet { color: #d46b08; background: #fff7e6; }.is-green { color: #00a870; background: #e8ffea; }
+.teacher-metric-card__content { min-width: 0; }.teacher-metric-card__content p { margin: 0 0 5px; overflow: hidden; color: #646a73; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }.teacher-metric-card__content strong { display: block; color: #1f2329; font-size: 23px; line-height: 1; }.teacher-metric-card__content small { margin-left: 3px; font-size: 12px; font-weight: 500; }.teacher-metric-card__trend { display: flex; align-items: center; gap: 2px; margin-top: 7px; color: #86909c; font-size: 11px; }.teacher-metric-card__trend.is-up, .teacher-metric-card__trend.is-down { color: #86909c; }
+.teacher-chart-grid { display: grid; grid-template-columns: minmax(0, 1.34fr) minmax(330px, .66fr); gap: 14px; }.teacher-panel { min-width: 0; background: #fff; border: 1px solid #e5e6eb; border-radius: 6px; }.teacher-panel__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 16px 16px 6px; }.teacher-panel__heading h3 { margin: 0; color: #1f2329; font-size: 14px; font-weight: 600; }.teacher-panel__heading span { display: block; margin-top: 4px; color: #86909c; font-size: 12px; }.teacher-panel__heading > strong { padding-top: 2px; color: #1677ff; font-size: 14px; }
 .teacher-review-list { margin-top: 16px; overflow: hidden; }.teacher-review-list__heading { align-items: center; padding-bottom: 12px; }.teacher-review-table::before { display: none; }.teacher-review-table :deep(th.el-table__cell) { color: #6B778C; font-size: 12px; font-weight: 500; background: #FAFCFF; }.teacher-review-table :deep(td.el-table__cell) { color: #344158; font-size: 13px; }.teacher-student { display: flex; align-items: center; gap: 8px; }.teacher-student .el-avatar { color: #2766CC; background: #EAF1FF; font-size: 12px; }
 @media (max-width: 1180px) { .teacher-metrics { grid-template-columns: repeat(2, 1fr); }.teacher-metric-card:nth-child(2) { border-right: 0; }.teacher-metric-card:nth-child(-n + 2) { border-bottom: 1px solid #E8EDF5; }.teacher-chart-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .teacher-dashboard__heading { align-items: flex-start; flex-direction: column; }.teacher-dashboard__heading h2 { font-size: 21px; }.teacher-dashboard__heading > span { padding: 0; }.teacher-metrics { grid-template-columns: 1fr; }.teacher-metric-card { border-right: 0; border-bottom: 1px solid #E8EDF5; }.teacher-metric-card:nth-child(2) { border-right: 0; }.teacher-metric-card:last-child { border-bottom: 0; }.teacher-panel__heading { padding: 16px 16px 6px; }.teacher-review-list__heading { align-items: flex-start; flex-direction: column; }.teacher-review-table { overflow-x: auto; } }

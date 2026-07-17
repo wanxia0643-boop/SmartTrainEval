@@ -484,4 +484,15 @@ onMounted(() => {
   max-height: 85vh;
   object-fit: contain;
 }
+
+/* Student course shelf uses the same restrained resource-card pattern. */
+.student-course-management { padding: 0; }
+.page-header { margin-bottom: 16px; }
+.btn-enroll { padding: 8px 14px; background: #1677ff; border-radius: 4px; box-shadow: none; font-size: 13px; transition: background-color 140ms ease; }.btn-enroll:hover { background: #3c8cff; transform: none; box-shadow: none; }
+.header-right { gap: 10px; }.search-input { width: 240px; }.search-input :deep(.el-input__wrapper) { border-radius: 4px; }
+.course-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.course-card { background: #fff; border: 1px solid #e5e6eb; border-radius: 6px; box-shadow: none; transition: border-color 140ms ease; }.course-card:hover { border-color: #91caff; transform: none; box-shadow: none; }
+.card-cover { height: 142px; background: #f2f3f5; }.cover-default { color: #c0c4cc; background: #f2f3f5; }
+.card-hover-actions { top: 8px; right: 8px; padding: 5px 8px; background: #fff; border: 1px solid #e5e6eb; border-radius: 4px; box-shadow: none; }.hover-action-btn { color: #1677ff; }.drag-icon { color: #86909c; }
+.progress-overlay { padding: 18px 10px 7px; background: linear-gradient(transparent, rgba(31, 35, 41, .82)); }.progress-fill { background: #1677ff; }.card-body { padding: 12px 14px; }.course-title { color: #1f2329; font-size: 14px; }.course-teacher { color: #86909c; }.pagination { margin-top: 20px; }
 </style>

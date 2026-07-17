@@ -1484,7 +1484,7 @@ onBeforeUnmount(() => {
   color: #fff;
   font-size: clamp(20px, 1.55vw, 29px);
   font-weight: 900;
-  letter-spacing: .04em;
+  letter-spacing: 0;
   white-space: nowrap;
   text-shadow: 0 0 20px rgba(63, 190, 255, .85);
 }
@@ -1650,7 +1650,7 @@ onBeforeUnmount(() => {
 
 .panel-title strong {
   font-size: 15px;
-  letter-spacing: .03em;
+  letter-spacing: 0;
 }
 
 .ring-panel {
@@ -2019,7 +2019,7 @@ onBeforeUnmount(() => {
   color: #68eaff;
   font-size: 10px;
   font-weight: 900;
-  letter-spacing: .12em;
+  letter-spacing: 0;
 }
 
 .human-copy strong {

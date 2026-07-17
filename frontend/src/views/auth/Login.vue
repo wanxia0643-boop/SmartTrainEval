@@ -153,7 +153,7 @@ async function submit() {
         <p>贯通院校教学、企业实践与学习者成长，把实训过程、能力表现与评价反馈沉淀为可信的人才档案。</p>
         <ul class="brand-points">
           <li><i></i>教学 · 实训 · 评价一体化</li>
-          <li><i></i>AI 智能核查，多方协同评分</li>
+          <li><i></i>提交前核查，多方协同评价</li>
           <li><i></i>能力图谱与成长档案可追溯</li>
         </ul>
       </aside>
@@ -236,8 +236,8 @@ async function submit() {
   background: #fff; box-shadow: 0 8px 22px rgba(33, 82, 180, .22);
 }
 .brand-mark img { width: 34px; height: 34px; display: block; }
-.brand-row strong { font-size: 22px; letter-spacing: .04em; color: #14213d; }
-.auth-brand h1 { margin: 0 0 16px; font-size: 40px; line-height: 1.22; font-weight: 800; letter-spacing: -.01em; color: #15264a; }
+.brand-row strong { font-size: 22px; letter-spacing: 0; color: #14213d; }
+.auth-brand h1 { margin: 0 0 16px; font-size: 40px; line-height: 1.22; font-weight: 800; letter-spacing: 0; color: #15264a; }
 .auth-brand > p { margin: 0 0 26px; max-width: 460px; color: #41527a; font-size: 15px; line-height: 1.8; }
 .brand-points { list-style: none; margin: 0; padding: 0; display: grid; gap: 13px; }
 .brand-points li { display: flex; align-items: center; gap: 10px; color: #2c3e63; font-size: 14.5px; font-weight: 500; }
@@ -252,7 +252,7 @@ async function submit() {
   box-shadow: 0 30px 70px rgba(20, 50, 110, .26);
 }
 .card-head { margin-bottom: 22px; }
-.card-kicker { color: #2f6bff; font-size: 12px; font-weight: 700; letter-spacing: .14em; }
+.card-kicker { color: #2f6bff; font-size: 12px; font-weight: 700; letter-spacing: 0; }
 .card-head h2 { margin: 8px 0 6px; font-size: 26px; color: #16203a; font-weight: 750; }
 .card-head p { margin: 0; color: #7a8499; font-size: 13.5px; }
 
@@ -266,7 +266,7 @@ async function submit() {
 
 .login-utilities { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 18px; font-size: 13px; }
 .login-utilities a { color: #2f6bff; text-decoration: none; }
-.login-submit { width: 100%; height: 46px; font-size: 15px; font-weight: 600; letter-spacing: .06em; border: none; background: linear-gradient(135deg, #3b82f6, #2f6bff); box-shadow: 0 12px 26px rgba(47, 107, 255, .38); }
+.login-submit { width: 100%; height: 46px; font-size: 15px; font-weight: 600; letter-spacing: 0; border: none; background: #1677ff; box-shadow: none; }
 .demo-tip { margin: 14px 0 0; text-align: center; color: #9aa4b8; font-size: 12.5px; }
 
 @media (max-width: 920px) {
@@ -280,4 +280,48 @@ async function submit() {
   .auth-card { padding: 26px 22px; }
   .role-grid { grid-template-columns: 1fr; }
 }
+
+/* Login follows the same quiet workbench language as the signed-in product. */
+.auth { padding: 24px; background: #f5f6f7; }
+.auth-scene, .fig { display: none; }
+.auth-content {
+  width: min(100%, 980px);
+  max-width: none;
+  min-height: 620px;
+  grid-template-columns: 390px minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e6eb;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(31, 35, 41, .08);
+}
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  padding: 44px 40px;
+  color: #1f2329;
+  background: #f7f8fa;
+  border-right: 1px solid #e5e6eb;
+}
+.brand-row { margin-bottom: 72px; }
+.brand-mark { width: 40px; height: 40px; background: #fff; border: 1px solid #e5e6eb; border-radius: 7px; box-shadow: none; }
+.brand-mark img { width: 30px; height: 30px; }.brand-row strong { color: #1f2329; font-size: 20px; letter-spacing: 0; }
+.auth-brand h1 { margin-bottom: 12px; color: #1f2329; font-size: 30px; font-weight: 650; line-height: 1.35; letter-spacing: 0; }
+.auth-brand > p { margin-bottom: 28px; color: #646a73; font-size: 14px; line-height: 1.75; }
+.brand-points { gap: 0; margin-top: auto; background: #fff; border: 1px solid #e5e6eb; border-radius: 6px; }
+.brand-points li { min-height: 48px; padding: 0 14px; color: #4e5969; font-size: 13px; font-weight: 400; border-bottom: 1px solid #f0f1f2; }.brand-points li:last-child { border-bottom: 0; }
+.brand-points i { width: 5px; height: 5px; background: #00a870; border-radius: 50%; box-shadow: none; }
+.auth-card { align-self: center; padding: 48px 54px; background: #fff; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; }
+.card-head { margin-bottom: 24px; }.card-kicker { display: none; }.card-head h2 { margin: 0 0 7px; color: #1f2329; font-size: 24px; font-weight: 650; }.card-head p { color: #86909c; font-size: 13px; }
+.role-grid { gap: 8px; }.role-grid :deep(.el-radio.role-choice) { min-height: 62px; padding: 10px 11px; border-radius: 5px; }.role-grid :deep(.el-radio.role-choice .el-radio__label) { gap: 3px; padding-left: 7px; }.role-grid :deep(.el-radio.role-choice strong) { color: #1f2329; font-size: 13px; }.role-grid :deep(.el-radio.role-choice span) { color: #86909c; font-size: 11px; }.role-grid :deep(.el-radio.role-choice.is-checked) { border-color: #1677ff; background: #eaf3ff; }.role-grid :deep(.el-radio.role-choice.is-checked strong) { color: #1677ff; }
+.login-utilities a { color: #1677ff; }.login-submit { height: 42px; background: #1677ff; border-radius: 4px; box-shadow: none; font-size: 14px; font-weight: 500; letter-spacing: 0; }.login-submit:hover { background: #3c8cff; }.demo-tip { color: #a2a7ae; font-size: 12px; }
+@media (max-width: 820px) {
+  .auth { padding: 16px; }
+  .auth-content { width: min(100%, 520px); min-height: auto; grid-template-columns: 1fr; }
+  .auth-brand { padding: 24px 28px; border-right: 0; border-bottom: 1px solid #e5e6eb; }
+  .brand-row { margin-bottom: 18px; }.auth-brand h1 { font-size: 24px; }.auth-brand > p, .brand-points { display: none; }
+  .auth-card { padding: 32px 28px; }
+}
+@media (max-width: 520px) { .auth { padding: 0; }.auth-content { min-height: 100dvh; border: 0; border-radius: 0; }.auth-card { padding: 28px 20px; }.role-grid { grid-template-columns: 1fr; } }
 </style>

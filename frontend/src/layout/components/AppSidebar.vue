@@ -24,7 +24,7 @@ function handleSidebarControl() {
       <div class="brand-mark"><img src="/logo.svg" alt="" /></div>
       <div v-show="!collapsed" class="brand-copy">
         <strong>智训评</strong>
-        <span>软件实训智能评价系统</span>
+        <span>实训协同与评价</span>
       </div>
     </div>
 
@@ -33,8 +33,8 @@ function handleSidebarControl() {
         :collapse="collapsed"
         :default-active="String(route.name)"
         background-color="transparent"
-        text-color="rgba(235, 244, 255, .74)"
-        active-text-color="#fff"
+        text-color="#4e5969"
+        active-text-color="#1677ff"
         :collapse-transition="false"
       >
         <el-menu-item v-for="item in permissionStore.menus" :key="item.name" :index="item.name" @click="navigate(item.name)">
@@ -46,7 +46,7 @@ function handleSidebarControl() {
 
     <button class="collapse-control" type="button" :aria-label="appStore.mobileNavOpen ? '关闭导航菜单' : (collapsed ? '展开侧边栏' : '收起侧边栏')" @click="handleSidebarControl">
       <el-icon><MenuIcon /></el-icon>
-      <span v-show="!collapsed">收起菜单</span>
+      <span v-show="!collapsed">收起</span>
     </button>
   </aside>
 </template>

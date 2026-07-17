@@ -72,6 +72,8 @@ def main() -> None:
         f"/ai/achievements/{enterprise_achievements[0]['id']}/enterprise-evidence",
     )
     assert evidence["competencies"]
+    assert evidence["context_summary"]["indicator_count"] > 0
+    assert evidence["citations"]
     briefing = call(tokens["enterprise"], "POST", f"/ai/projects/{active['id']}/briefing")
     assert briefing["script"]
     health = call(tokens["admin"], "GET", "/ai/health")
@@ -117,6 +119,7 @@ def main() -> None:
         "admin_scoring_blocked": blocked.status_code,
         "unenrolled_project_blocked": forbidden.status_code,
         "enterprise_competencies": len(evidence["competencies"]),
+        "enterprise_evidence_sources": len(evidence["citations"]),
         "ai_calls_audited": health["total_calls"],
     }
     assert abs(result["score_60_40"] - 74.2) < 0.01

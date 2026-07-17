@@ -206,6 +206,36 @@ def enterprise_evidence(
     current: CurrentUser = Depends(require_roles(RoleCode.ENTERPRISE, RoleCode.ADMIN)),
 ):
     achievement, project = ensure_achievement_read(db, achievement_id, current)
+    indicators = list(db.scalars(select(EvalIndicator).where(
+        EvalIndicator.project_id == project.id,
+        EvalIndicator.status == 1,
+        EvalIndicator.is_deleted == 0,
+    ).order_by(EvalIndicator.sort, EvalIndicator.id)).all())
+    teacher_results = list(db.scalars(select(EvalResult).where(
+        EvalResult.achievement_id == achievement.id,
+        EvalResult.eval_type == 2,
+        EvalResult.is_deleted == 0,
+    )).all())
+    sources = retrieve(
+        db,
+        course_id=project.course_id,
+        project_id=project.id,
+        query=f"{project.project_name} 岗位标准 技术能力 工程质量 评价要求",
+        limit=4,
+    ) if project.course_id else []
+    citations = [{k: v for k, v in item.items() if k != "content"} for item in sources]
+    indicator_context = "\n".join(
+        f"- {item.indicator_name}（权重 {item.weight}%）：{item.scoring_rule or '未填写细则'}"
+        for item in indicators
+    ) or "项目未配置评价指标"
+    teacher_context = "\n".join(
+        f"- 指标 {item.indicator_id}：{item.score} 分；评语：{item.comment or '无'}；建议：{item.suggestion or '无'}"
+        for item in teacher_results
+    ) or "教师尚未形成可参考的人工评价"
+    standard_context = "\n\n".join(
+        f"[{index + 1}] {item['title']} {item['source_label'] or ''}\n{item['content']}"
+        for index, item in enumerate(sources)
+    ) or "知识库中暂未检索到直接相关的岗位标准"
     fallback = {
         "competencies": [
             {"name": "工程实现", "level": "待核验", "evidence": achievement.content or "成果说明不足"},
@@ -215,14 +245,42 @@ def enterprise_evidence(
         "interview_questions": ["你如何定位并解决项目中最复杂的问题？", "如果重新迭代一次，你会优先改进什么？"],
         "review_note": "以上为证据整理，不构成自动录用或淘汰结论。",
     }
-    prompt = f"""你是企业软件人才证据分析助手。只依据成果材料整理岗位能力证据，不作录用结论。
-输出严格 JSON：competencies(name,level,evidence)、missing_evidence、interview_questions、review_note。
-项目：{project.project_name}\n要求：{project.description or ''}\n成果：{achievement.title}\n{achievement.content or ''}"""
+    prompt = f"""你是企业软件人才岗位证据分析助手。只能依据提供的成果、岗位资料、项目量规和教师评价整理证据，不得推断性格、背景，也不得作出录用或淘汰决定。
+输出严格 JSON，字段为 competencies、missing_evidence、interview_questions、review_note。
+competencies 为 3 至 5 项，每项包含 name、level、evidence；level 只能是“突出”“达标”“待提升”“待核验”。evidence 必须指出材料中的具体事实，不得只写空泛结论。
+
+项目：{project.project_name}
+项目要求：{project.description or '未填写'}
+成果：{achievement.title}
+成果说明：{achievement.content or '未填写'}
+代码仓库：{achievement.repo_url or '未提供'}
+成果附件：{achievement.attachment_url or '未提供'}
+
+项目量规：
+{indicator_context}
+
+已有教师评价：
+{teacher_context}
+
+课程或岗位标准资料：
+{standard_context}
+"""
     result, available, analysis = invoke_structured(
         db, current_user_id=current.user_id, scene="ENTERPRISE_EVIDENCE",
         biz_type="ACHIEVEMENT", biz_id=achievement.id, prompt=prompt, fallback=fallback,
+        citations=citations,
     )
-    return success(data={**result, "available": available, "analysis_id": analysis.id})
+    return success(data={
+        **result,
+        "available": available,
+        "analysis_id": analysis.id,
+        "citations": citations,
+        "context_summary": {
+            "indicator_count": len(indicators),
+            "teacher_result_count": len(teacher_results),
+            "knowledge_source_count": len(sources),
+        },
+    })
 
 
 @router.post("/projects/{project_id}/briefing")

@@ -41,7 +41,7 @@ def _project_filters(stmt, user: CurrentUser):
             CourseEnrollment.is_deleted == 0,
         )
         return stmt.where(
-            TrainProject.status != 3,
+            TrainProject.status.in_((1, 2)),
             TrainProject.course_id.in_(enrolled_courses),
         )
     return stmt.where(False)

@@ -18,7 +18,7 @@ from app.core.access import (
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
-from app.core.exceptions import BusinessException
+from app.core.exceptions import BusinessException, PermissionException
 from app.core.response import success
 from app.models.achievement import TrainAchievement
 from app.models.ai_agent import AIAnalysis, AIMessage, AISession
@@ -28,7 +28,7 @@ from app.models.knowledge import KnowledgeDocument
 from app.models.llm_log import LlmCallLog
 from app.models.project import TrainProject
 from app.models.work_item import WorkItem
-from app.schemas.ai_agent import CoachRequest, ProjectDraftRequest
+from app.schemas.ai_agent import CoachRequest, ProjectDraftApplyRequest, ProjectDraftRequest
 from app.schemas.auth import CurrentUser
 from app.services.ai_agent_service import invoke_structured
 from app.services.knowledge_service import retrieve
@@ -42,6 +42,57 @@ def _json(value: str | None, default):
         return json.loads(value or "")
     except (json.JSONDecodeError, TypeError):
         return default
+
+
+def _draft_text_items(values, fallback: list[str]) -> list[str]:
+    if not isinstance(values, list):
+        return fallback
+    items = []
+    for value in values[:12]:
+        if isinstance(value, str):
+            text = value.strip()
+        elif isinstance(value, dict):
+            text = str(
+                value.get("event") or value.get("title") or value.get("name")
+                or value.get("description") or ""
+            ).strip()
+            if value.get("day") and text:
+                text = f"第 {value['day']} 天：{text}"
+        else:
+            text = ""
+        if text:
+            items.append(text)
+    return items or fallback
+
+
+def _normalize_project_draft(result: dict, fallback: dict) -> dict:
+    milestones = _draft_text_items(result.get("milestones"), fallback["milestones"])
+    requirements = _draft_text_items(
+        result.get("submission_requirements"), fallback["submission_requirements"]
+    )
+    raw_indicators = result.get("indicators")
+    indicators = []
+    if isinstance(raw_indicators, list):
+        for item in raw_indicators[:12]:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or item.get("indicator_name") or "").strip()
+            rule = str(item.get("rule") or item.get("scoring_rule") or "").strip()
+            try:
+                weight = int(float(item.get("weight", 0)))
+            except (TypeError, ValueError):
+                weight = 0
+            if name and rule and 1 <= weight <= 100:
+                indicators.append({"name": name[:100], "weight": weight, "rule": rule[:1000]})
+    if not indicators or sum(item["weight"] for item in indicators) != 100:
+        indicators = fallback["indicators"]
+    return {
+        "project_name": str(result.get("project_name") or fallback["project_name"]).strip()[:150],
+        "description": str(result.get("description") or fallback["description"]).strip()[:5000],
+        "milestones": milestones,
+        "submission_requirements": requirements,
+        "indicators": indicators,
+    }
 
 
 @router.post("/coach/chat")
@@ -164,7 +215,104 @@ def generate_project_draft(
         biz_type="COURSE", biz_id=payload.course_id, prompt=prompt, fallback=fallback,
         citations=[{k: v for k, v in item.items() if k != "content"} for item in sources],
     )
-    return success(data={**result, "available": available, "analysis_id": analysis.id})
+    normalized = _normalize_project_draft(result, fallback)
+    return success(data={**normalized, "available": available, "analysis_id": analysis.id})
+
+
+@router.post("/projects/draft/apply")
+def apply_project_draft(
+    payload: ProjectDraftApplyRequest,
+    db: Session = Depends(get_db),
+    current: CurrentUser = Depends(require_roles(RoleCode.TEACHER)),
+):
+    course = ensure_course_read(db, payload.course_id, current)
+    analysis = db.get(AIAnalysis, payload.analysis_id)
+    if (
+        not analysis
+        or analysis.is_deleted == 1
+        or analysis.user_id != current.user_id
+        or analysis.scene != "PROJECT_DRAFT"
+    ):
+        raise PermissionException("AI 项目草案不存在或无权使用")
+    if analysis.biz_type != "COURSE":
+        raise BusinessException("该 AI 项目草案已经创建过项目", code=409, http_status=409)
+    if analysis.biz_id != course.id:
+        raise PermissionException("AI 项目草案不属于当前课程")
+    existing = db.scalar(select(TrainProject).where(
+        TrainProject.project_code == payload.project_code,
+        TrainProject.is_deleted == 0,
+    ))
+    if existing:
+        raise BusinessException("项目编码已存在，请修改后重试", code=409)
+
+    milestone_text = "\n".join(
+        f"{index + 1}. {item.strip()}" for index, item in enumerate(payload.milestones)
+    )
+    requirement_text = "\n".join(
+        f"{index + 1}. {item.strip()}" for index, item in enumerate(payload.submission_requirements)
+    )
+    description = (
+        f"{payload.description.strip()}\n\n"
+        f"【项目里程碑】\n{milestone_text}\n\n"
+        f"【提交要求】\n{requirement_text}"
+    )
+    start_time = datetime.now(timezone.utc).replace(tzinfo=None)
+    project = TrainProject(
+        project_name=payload.project_name.strip(),
+        project_code=payload.project_code.strip(),
+        org_id=course.org_id,
+        course_id=course.id,
+        teacher_id=current.user_id,
+        enterprise_id=None,
+        category=payload.category.strip() if payload.category else None,
+        difficulty=payload.difficulty,
+        description=description,
+        start_time=start_time,
+        end_time=start_time + timedelta(days=payload.duration_days),
+        status=0,
+    )
+    db.add(project)
+    db.flush()
+    indicators = []
+    for index, item in enumerate(payload.indicators):
+        indicator = EvalIndicator(
+            project_id=project.id,
+            parent_id=0,
+            indicator_name=item.name.strip(),
+            indicator_code=f"AI_{project.id}_{index + 1}",
+            weight=item.weight,
+            max_score=100,
+            scoring_rule=item.rule.strip(),
+            sort=index + 1,
+            status=1,
+        )
+        db.add(indicator)
+        indicators.append(indicator)
+    analysis.biz_type = "PROJECT"
+    analysis.biz_id = project.id
+    db.add(analysis)
+    db.commit()
+    db.refresh(project)
+    for indicator in indicators:
+        db.refresh(indicator)
+    return success(data={
+        "project": {
+            "id": project.id,
+            "project_name": project.project_name,
+            "project_code": project.project_code,
+            "course_id": project.course_id,
+            "difficulty": project.difficulty,
+            "status": project.status,
+        },
+        "indicators": [{
+            "id": item.id,
+            "name": item.indicator_name,
+            "weight": float(item.weight),
+            "rule": item.scoring_rule,
+        } for item in indicators],
+        "weight_total": sum(item.weight for item in payload.indicators),
+        "published": False,
+    }, msg="AI 项目草案已创建，请确认后发布")
 
 
 @router.post("/achievements/{achievement_id}/precheck")

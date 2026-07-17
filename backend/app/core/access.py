@@ -86,7 +86,7 @@ def can_read_project(project: TrainProject, user: CurrentUser) -> bool:
 def ensure_project_read(db: Session, project_id: int, user: CurrentUser) -> TrainProject:
     project = get_project_or_404(db, project_id)
     if is_student(user):
-        if project.status != 3 and project.course_id and is_course_enrolled(
+        if project.status in (1, 2) and project.course_id and is_course_enrolled(
             db, project.course_id, user.user_id
         ):
             return project

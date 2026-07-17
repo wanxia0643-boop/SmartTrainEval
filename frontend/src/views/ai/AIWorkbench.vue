@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { DataAnalysis, DocumentChecked, MagicStick, Promotion, UploadFilled } from '@element-plus/icons-vue'
+import { Check, CirclePlus, DataAnalysis, Delete, DocumentChecked, MagicStick, Promotion, UploadFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { listCourses } from '../../api/courses'
@@ -9,7 +9,7 @@ import { listStudentCourses } from '../../api/studentCourses'
 import { listProjects } from '../../api/projects'
 import { listAchievements } from '../../api/achievements'
 import {
-  analyzeClass, coachChat, generateEnterpriseEvidence, generateProjectBriefing,
+  analyzeClass, applyProjectDraft, coachChat, generateEnterpriseEvidence, generateProjectBriefing,
   generateProjectDraft, getAIHealth, listAIAnalyses, precheckAchievement,
 } from '../../api/aiAgent'
 import { deleteKnowledgeDocument, listKnowledgeDocuments, uploadKnowledgeDocument } from '../../api/knowledge'
@@ -36,6 +36,14 @@ const chatItems = ref([])
 const objective = ref('完成一个具备需求分析、工程实现、自动化测试和成果汇报的软件项目')
 const uploadFile = ref(null)
 const uploadTitle = ref('')
+const draftForm = ref(null)
+const applyingDraft = ref(false)
+const appliedProject = ref(null)
+const difficultyOptions = [
+  { label: '基础', value: 1 },
+  { label: '进阶', value: 2 },
+  { label: '挑战', value: 3 },
+]
 
 const roleTitle = computed(() => ({
   student: 'AI 实训学伴', teacher: 'AI 教学助手', enterprise: 'AI 岗位证据助手', admin: 'AI 运行治理',
@@ -47,6 +55,67 @@ const roleCaption = computed(() => ({
   admin: '查看模型健康、知识库覆盖、调用质量和全部 AI 分析记录。',
 }[userStore.role]))
 const selectedProject = computed(() => projects.value.find((item) => item.id === selectedProjectId.value))
+const draftWeightTotal = computed(() => (
+  draftForm.value?.indicators || []
+).reduce((sum, item) => sum + Number(item.weight || 0), 0))
+const canApplyDraft = computed(() => Boolean(
+  draftForm.value?.project_name?.trim()
+  && draftForm.value?.project_code?.trim()
+  && draftForm.value?.description?.trim()
+  && draftForm.value?.milestones?.every((item) => item.trim())
+  && draftForm.value?.submission_requirements?.every((item) => item.trim())
+  && draftForm.value?.indicators?.every((item) => item.name.trim() && item.rule.trim())
+  && draftWeightTotal.value === 100
+))
+
+function hydrateProjectDraft(data) {
+  const suffix = String(data.analysis_id || Date.now()).slice(-6)
+  const normalizeTextItems = (items, fallback) => (
+    Array.isArray(items) && items.length ? items : fallback
+  ).map((item) => typeof item === 'string' ? item : String(item?.event || item?.title || item?.name || item?.description || ''))
+  draftForm.value = {
+    analysis_id: data.analysis_id,
+    course_id: selectedCourseId.value,
+    project_name: data.project_name || '软件实训综合项目',
+    project_code: `AI-${selectedCourseId.value}-${suffix}`,
+    category: '软件开发',
+    difficulty: 2,
+    duration_days: 14,
+    description: data.description || objective.value,
+    milestones: normalizeTextItems(data.milestones, ['需求分析与方案设计', '核心功能实现', '测试与成果汇报']),
+    submission_requirements: normalizeTextItems(data.submission_requirements, ['源代码或仓库地址', '设计与测试报告', '关键运行截图']),
+    indicators: (Array.isArray(data.indicators) && data.indicators.length ? data.indicators : [
+      { name: '需求完成度', weight: 30, rule: '核心流程可运行并覆盖项目目标' },
+      { name: '代码质量', weight: 25, rule: '结构清晰、异常处理完整' },
+      { name: '过程完整性', weight: 25, rule: '体现设计、实现、测试和迭代' },
+      { name: '文档与表达', weight: 20, rule: '结论有材料和证据支撑' },
+    ]).map((item) => ({ name: item.name || '', weight: Number(item.weight || 0), rule: item.rule || '' })),
+  }
+  appliedProject.value = null
+}
+
+function addDraftItem(key) {
+  if (key === 'indicators') draftForm.value.indicators.push({ name: '', weight: 0, rule: '' })
+  else draftForm.value[key].push('')
+}
+
+function removeDraftItem(key, index) {
+  if (draftForm.value[key].length <= 1) return ElMessage.warning('至少保留一项')
+  draftForm.value[key].splice(index, 1)
+}
+
+async function confirmProjectDraft() {
+  if (!canApplyDraft.value) return ElMessage.warning('请补全草案，并确保指标权重合计为 100')
+  applyingDraft.value = true
+  try {
+    const data = await applyProjectDraft(draftForm.value)
+    appliedProject.value = data.project
+    ElMessage.success('项目与评价量规已创建为未发布草稿')
+    await loadContext()
+  } finally {
+    applyingDraft.value = false
+  }
+}
 
 async function loadContext() {
   loading.value = true
@@ -110,6 +179,7 @@ async function runAction(type) {
     if (type === 'draft') {
       if (!selectedCourseId.value) return ElMessage.warning('请先选择课程')
       result.value = await generateProjectDraft({ course_id: selectedCourseId.value, objective: objective.value, difficulty: 2, duration_days: 14 })
+      hydrateProjectDraft(result.value)
       resultTitle.value = 'AI 项目与量规草案'
     } else if (type === 'precheck') {
       if (!selectedAchievementId.value) return ElMessage.warning('请选择成果')
@@ -188,7 +258,14 @@ onMounted(loadContext)
     </div>
 
     <div v-else-if="userStore.role === 'teacher'" class="ai-grid">
-      <article class="data-panel tool-panel"><div class="panel-heading"><div><h3>AI 项目设计</h3><span>生成内容需由教师确认后发布</span></div></div><el-input v-model="objective" type="textarea" :rows="5" /><el-button type="primary" :icon="MagicStick" @click="runAction('draft')">生成项目与量规草案</el-button></article>
+      <article class="data-panel tool-panel project-designer">
+        <div class="panel-heading"><div><h3>AI 项目设计</h3><span>从教学目标生成可编辑的项目、里程碑、提交要求和评价量规</span></div></div>
+        <el-input v-model="objective" type="textarea" :rows="5" placeholder="描述课程目标、学生基础、希望完成的真实任务和最终产出" />
+        <div class="design-actions">
+          <span>生成后先由教师审核，不会直接向学生发布。</span>
+          <el-button type="primary" :icon="MagicStick" :loading="loading" @click="runAction('draft')">生成可编辑草案</el-button>
+        </div>
+      </article>
       <article class="data-panel tool-panel"><div class="panel-heading"><div><h3>班级学情分析</h3><span>聚合成果状态、薄弱能力与教学干预建议</span></div></div><p>当前项目共有 {{ achievements.length }} 份成果。</p><el-button type="primary" :icon="DataAnalysis" @click="runAction('class')">生成学情分析</el-button><el-button @click="runAction('briefing')">生成数字人播报</el-button></article>
     </div>
 
@@ -208,9 +285,57 @@ onMounted(loadContext)
       <el-table :data="documents"><el-table-column prop="title" label="资料" min-width="180" /><el-table-column prop="file_name" label="文件" min-width="180" show-overflow-tooltip /><el-table-column label="状态" width="100"><template #default="{row}"><el-tag :type="row.status===1?'success':'warning'" effect="plain">{{ row.status===1?'可检索':'解析失败' }}</el-tag></template></el-table-column><el-table-column label="操作" width="90"><template #default="{row}"><el-button text type="danger" @click="removeDocument(row.id)">删除</el-button></template></el-table-column></el-table>
     </article>
 
-    <el-drawer v-model="resultVisible" :title="resultTitle" size="48%">
-      <div class="result-summary"><el-tag :type="result?.available===false?'warning':'success'" effect="plain">{{ result?.available===false?'规则降级结果':'AI 分析完成' }}</el-tag><el-button v-if="resultTitle.includes('播报')" type="primary" @click="openReport">交给数字人讲解</el-button></div>
-      <pre>{{ pretty(result) }}</pre>
+    <el-drawer v-model="resultVisible" :title="resultTitle" :size="draftForm && resultTitle.includes('草案') ? '68%' : '48%'">
+      <template v-if="draftForm && resultTitle.includes('草案')">
+        <div v-if="appliedProject" class="draft-success">
+          <el-icon><Check /></el-icon>
+          <div><strong>项目与量规已创建</strong><span>{{ appliedProject.project_code }} · 当前为未发布状态</span></div>
+          <el-button type="primary" @click="router.push({ name: 'training-management' })">继续配置并发布</el-button>
+        </div>
+        <div class="result-summary">
+          <el-tag :type="result?.available===false ? 'warning' : 'success'" effect="plain">{{ result?.available===false ? '规则降级草案' : 'AI 草案已生成' }}</el-tag>
+          <span>所有内容均可编辑，确认后才写入业务数据</span>
+        </div>
+        <el-form v-if="draftForm" label-position="top" class="draft-form">
+          <div class="draft-grid">
+            <el-form-item label="项目名称"><el-input v-model="draftForm.project_name" maxlength="150" /></el-form-item>
+            <el-form-item label="项目编码"><el-input v-model="draftForm.project_code" maxlength="64" /></el-form-item>
+            <el-form-item label="项目类别"><el-input v-model="draftForm.category" maxlength="50" /></el-form-item>
+            <el-form-item label="实施周期"><el-input-number v-model="draftForm.duration_days" :min="1" :max="180" /><span class="field-unit">天</span></el-form-item>
+          </div>
+          <el-form-item label="项目背景与目标"><el-input v-model="draftForm.description" type="textarea" :rows="4" maxlength="5000" show-word-limit /></el-form-item>
+          <el-form-item label="难度"><el-segmented v-model="draftForm.difficulty" :options="difficultyOptions" /></el-form-item>
+
+          <section class="draft-section">
+            <div class="draft-section-title"><div><strong>项目里程碑</strong><span>学生按阶段推进的关键检查点</span></div><el-button text type="primary" :icon="CirclePlus" @click="addDraftItem('milestones')">添加</el-button></div>
+            <div v-for="(_item, index) in draftForm.milestones" :key="`milestone-${index}`" class="draft-list-row"><span>{{ index + 1 }}</span><el-input v-model="draftForm.milestones[index]" /><el-button text :icon="Delete" title="删除里程碑" @click="removeDraftItem('milestones', index)" /></div>
+          </section>
+
+          <section class="draft-section">
+            <div class="draft-section-title"><div><strong>提交要求</strong><span>学生最终需要提交的证据材料</span></div><el-button text type="primary" :icon="CirclePlus" @click="addDraftItem('submission_requirements')">添加</el-button></div>
+            <div v-for="(_item, index) in draftForm.submission_requirements" :key="`requirement-${index}`" class="draft-list-row"><span>{{ index + 1 }}</span><el-input v-model="draftForm.submission_requirements[index]" /><el-button text :icon="Delete" title="删除提交要求" @click="removeDraftItem('submission_requirements', index)" /></div>
+          </section>
+
+          <section class="draft-section rubric-section">
+            <div class="draft-section-title"><div><strong>评价量规</strong><span>AI 预评和人工评价共同参考，最终成绩仍由教师和企业导师决定</span></div><div><el-tag :type="draftWeightTotal === 100 ? 'success' : 'warning'" effect="plain">权重 {{ draftWeightTotal }} / 100</el-tag><el-button text type="primary" :icon="CirclePlus" @click="addDraftItem('indicators')">添加</el-button></div></div>
+            <div v-for="(_item, index) in draftForm.indicators" :key="`indicator-${index}`" class="rubric-row">
+              <span>{{ index + 1 }}</span>
+              <el-input v-model="draftForm.indicators[index].name" placeholder="指标名称" />
+              <el-input-number v-model="draftForm.indicators[index].weight" :min="1" :max="100" controls-position="right" />
+              <el-input v-model="draftForm.indicators[index].rule" type="textarea" :rows="2" placeholder="可观察、可举证的评分规则" />
+              <el-button text :icon="Delete" title="删除评价指标" @click="removeDraftItem('indicators', index)" />
+            </div>
+          </section>
+        </el-form>
+        <div class="draft-footer">
+          <span>创建后状态为“未开始”，学生不可见，也不会生成提交任务。</span>
+          <el-button type="primary" :icon="Check" :loading="applyingDraft" :disabled="!canApplyDraft || Boolean(appliedProject)" @click="confirmProjectDraft">确认创建项目与量规</el-button>
+        </div>
+      </template>
+      <template v-else>
+        <div class="result-summary"><el-tag :type="result?.available===false?'warning':'success'" effect="plain">{{ result?.available===false?'规则降级结果':'AI 分析完成' }}</el-tag><el-button v-if="resultTitle.includes('播报')" type="primary" @click="openReport">交给数字人讲解</el-button></div>
+        <pre>{{ pretty(result) }}</pre>
+      </template>
     </el-drawer>
   </section>
 </template>
@@ -218,8 +343,10 @@ onMounted(loadContext)
 <style scoped>
 .context-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 14px 16px; }.context-bar .el-select { width: 240px; }.context-bar > span { margin-left: auto; color: var(--ste-muted); font-size: 12px; }
 .ai-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 16px; margin-bottom: 16px; }.chat-panel { overflow: hidden; }.chat-list { min-height: 360px; max-height: 500px; overflow-y: auto; padding: 16px; background: #fafcff; }.coach-welcome { display: grid; justify-items: center; gap: 8px; padding: 80px 20px; color: var(--ste-muted); }.coach-welcome .el-icon { color: var(--ste-primary); font-size: 28px; }.chat-item { max-width: 84%; margin-bottom: 12px; padding: 11px 13px; border: 1px solid var(--ste-border); border-radius: 8px; background: #fff; }.chat-item.user { margin-left: auto; color: #fff; background: var(--ste-primary); border-color: var(--ste-primary); }.chat-item p { margin: 0; line-height: 1.7; }.chat-item ul { margin: 9px 0 0; padding-left: 18px; color: #4c5a71; font-size: 13px; }.citation-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }.citation-list span { padding: 4px 7px; color: #315d9e; font-size: 11px; background: #edf3ff; border-radius: 4px; }.chat-input { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 14px; border-top: 1px solid var(--ste-border); }.action-panel, .tool-panel { padding: 0 18px 20px; }.action-panel p, .tool-panel p { color: var(--ste-muted); font-size: 13px; line-height: 1.7; }.tool-panel > .el-textarea { margin-bottom: 14px; }
+.project-designer { display: flex; flex-direction: column; }.design-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }.design-actions span { color: var(--ste-muted); font-size: 12px; }
+.draft-success { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-bottom: 16px; padding: 14px; color: #1f6b45; background: #eef9f3; border: 1px solid #bfe7cf; border-radius: 6px; }.draft-success .el-icon { font-size: 22px; }.draft-success div { display: grid; gap: 3px; }.draft-success span { color: #5d796a; font-size: 12px; }.result-summary > span { color: var(--ste-muted); font-size: 12px; }.draft-form { padding-bottom: 78px; }.draft-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 12px; }.field-unit { margin-left: 8px; color: var(--ste-muted); font-size: 12px; }.draft-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--ste-border); }.draft-section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }.draft-section-title > div { display: flex; align-items: center; gap: 10px; }.draft-section-title span { color: var(--ste-muted); font-size: 12px; }.draft-list-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 34px; align-items: center; gap: 8px; margin-bottom: 8px; }.draft-list-row > span, .rubric-row > span { display: grid; place-items: center; width: 24px; height: 24px; color: #526176; font-size: 11px; background: #eef2f7; border-radius: 50%; }.rubric-row { display: grid; grid-template-columns: 24px minmax(130px, .75fr) 130px minmax(240px, 1.5fr) 34px; align-items: center; gap: 8px; margin-bottom: 9px; }.rubric-row .el-input-number { width: 130px; }.draft-footer { position: absolute; right: 20px; bottom: 0; left: 20px; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0 18px; background: #fff; border-top: 1px solid var(--ste-border); }.draft-footer span { color: var(--ste-muted); font-size: 12px; }
 .knowledge-panel { margin-top: 16px; overflow: hidden; }.knowledge-toolbar { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; gap: 10px; padding: 10px 18px 18px; }.knowledge-panel .el-table { padding: 0 10px 10px; }
 .governance-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }.governance-card { display: grid; gap: 9px; padding: 20px; }.governance-card span { color: var(--ste-muted); font-size: 12px; }.governance-card strong { font-size: 24px; }.governance-table { grid-column: 1 / -1; overflow: hidden; }.governance-table .el-table { padding: 0 10px 12px; }.result-summary { display: flex; justify-content: space-between; margin-bottom: 16px; }.result-summary + pre { overflow: auto; padding: 16px; color: #d9e8ff; line-height: 1.65; white-space: pre-wrap; background: #10243f; border-radius: 8px; }
-@media (max-width: 1024px) { .ai-grid { grid-template-columns: 1fr; }.governance-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 700px) { .context-bar, .knowledge-toolbar { align-items: stretch; grid-template-columns: 1fr; flex-direction: column; }.context-bar .el-select { width: 100%; }.context-bar > span { margin-left: 0; }.governance-grid { grid-template-columns: 1fr; }.chat-input { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .ai-grid { grid-template-columns: 1fr; }.governance-grid { grid-template-columns: repeat(2, 1fr); }.draft-grid { grid-template-columns: repeat(2, 1fr); }.rubric-row { grid-template-columns: 24px 1fr 120px 34px; }.rubric-row .el-textarea { grid-column: 2 / 4; } }
+@media (max-width: 700px) { .context-bar, .knowledge-toolbar { align-items: stretch; grid-template-columns: 1fr; flex-direction: column; }.context-bar .el-select { width: 100%; }.context-bar > span { margin-left: 0; }.governance-grid, .draft-grid { grid-template-columns: 1fr; }.chat-input { grid-template-columns: 1fr; }.design-actions, .draft-section-title, .draft-footer { align-items: stretch; flex-direction: column; }.rubric-row { grid-template-columns: 24px minmax(0, 1fr) 34px; }.rubric-row .el-input-number, .rubric-row .el-textarea { grid-column: 2 / 3; width: 100%; } }
 </style>

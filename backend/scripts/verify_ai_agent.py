@@ -11,7 +11,10 @@ from sqlalchemy import select
 
 from app.core.database import SessionLocal
 from app.models.achievement import TrainAchievement
+from app.models.ai_agent import AIAnalysis
 from app.models.course_enrollment import CourseEnrollment
+from app.models.indicator import EvalIndicator
+from app.models.project import TrainProject
 from app.models.user import User
 
 BASE_URL = os.getenv("STE_API_BASE", "http://127.0.0.1:8000/api/v1")
@@ -67,6 +70,80 @@ def main() -> None:
     assert precheck["next_actions"]
     assert precheck["citations"]
     assert precheck["context_summary"]["indicator_count"] > 0
+
+    project_draft = call(tokens["teacher"], "POST", "/ai/projects/draft", json={
+        "course_id": active["course_id"],
+        "objective": "设计一个包含需求、实现、测试与复盘证据的两周软件实训项目",
+        "difficulty": 2,
+        "duration_days": 14,
+    })
+    assert project_draft["project_name"]
+    assert project_draft["milestones"]
+    draft_code = f"AI-SMOKE-{project_draft['analysis_id']}"
+    edited_indicators = [
+        {"name": "需求完成度", "weight": 30, "rule": "核心流程覆盖目标并可运行"},
+        {"name": "工程质量", "weight": 25, "rule": "结构清晰且异常处理完整"},
+        {"name": "测试证据", "weight": 25, "rule": "测试范围、结果与结论可追溯"},
+        {"name": "复盘表达", "weight": 20, "rule": "技术决策和迭代改进有证据支撑"},
+    ]
+    apply_payload = {
+        "analysis_id": project_draft["analysis_id"],
+        "course_id": active["course_id"],
+        "project_name": project_draft["project_name"],
+        "project_code": draft_code,
+        "category": "软件开发",
+        "difficulty": 2,
+        "duration_days": 14,
+        "description": project_draft["description"],
+        "milestones": project_draft["milestones"],
+        "submission_requirements": project_draft["submission_requirements"],
+        "indicators": edited_indicators,
+    }
+    invalid_apply = requests.post(
+        f"{BASE_URL}/ai/projects/draft/apply",
+        headers={"Authorization": f"Bearer {tokens['teacher']}"},
+        json={**apply_payload, "indicators": [{**edited_indicators[0], "weight": 20}, *edited_indicators[1:]]},
+        timeout=10,
+    )
+    assert invalid_apply.status_code == 422
+    applied_draft = call(tokens["teacher"], "POST", "/ai/projects/draft/apply", json=apply_payload)
+    created_project_id = applied_draft["project"]["id"]
+    try:
+        assert applied_draft["project"]["status"] == 0
+        assert applied_draft["weight_total"] == 100
+        assert len(applied_draft["indicators"]) == 4
+        teacher_projects = call(tokens["teacher"], "GET", "/projects?page=1&page_size=100")["items"]
+        assert any(item["id"] == created_project_id for item in teacher_projects)
+        student_projects_after_apply = call(tokens["student"], "GET", "/projects?page=1&page_size=100")["items"]
+        assert all(item["id"] != created_project_id for item in student_projects_after_apply)
+        hidden_draft = requests.get(
+            f"{BASE_URL}/projects/{created_project_id}",
+            headers={"Authorization": f"Bearer {tokens['student']}"},
+            timeout=10,
+        )
+        assert hidden_draft.status_code == 403
+        duplicate_apply = requests.post(
+            f"{BASE_URL}/ai/projects/draft/apply",
+            headers={"Authorization": f"Bearer {tokens['teacher']}"},
+            json={**apply_payload, "project_code": f"{draft_code}-COPY"},
+            timeout=10,
+        )
+        assert duplicate_apply.status_code == 409
+    finally:
+        with SessionLocal() as db:
+            for indicator in db.scalars(select(EvalIndicator).where(
+                EvalIndicator.project_id == created_project_id
+            )).all():
+                db.delete(indicator)
+            created_project = db.get(TrainProject, created_project_id)
+            if created_project:
+                db.delete(created_project)
+            analysis = db.get(AIAnalysis, project_draft["analysis_id"])
+            if analysis:
+                analysis.biz_type = "COURSE"
+                analysis.biz_id = active["course_id"]
+                db.add(analysis)
+            db.commit()
     class_result = call(tokens["teacher"], "POST", f"/ai/projects/{active['id']}/class-analysis")
     assert class_result["summary"]
     enterprise_achievements = call(
@@ -162,6 +239,9 @@ def main() -> None:
         "unenrolled_project_blocked": forbidden.status_code,
         "other_student_precheck_blocked": outsider_precheck.status_code,
         "draft_created_without_review_tasks": True,
+        "ai_project_draft_applied": 4,
+        "unpublished_project_hidden": hidden_draft.status_code,
+        "duplicate_draft_apply_blocked": duplicate_apply.status_code,
         "enterprise_competencies": len(evidence["competencies"]),
         "enterprise_evidence_sources": len(evidence["citations"]),
         "ai_calls_audited": health["total_calls"],

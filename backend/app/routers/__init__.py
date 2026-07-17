@@ -5,6 +5,9 @@ from app.routers import (
     achievement,
     ai,
     auth,
+    course,
+    course_enrollment,
+    course_folder,
     eval_result,
     indicator,
     llm_log,
@@ -24,6 +27,9 @@ api_router.include_router(user.router)
 api_router.include_router(role.router)
 api_router.include_router(org.router)
 api_router.include_router(project.router)
+api_router.include_router(course.router)
+api_router.include_router(course_enrollment.router)
+api_router.include_router(course_folder.router)
 api_router.include_router(achievement.router)
 api_router.include_router(indicator.router)
 api_router.include_router(eval_result.router)

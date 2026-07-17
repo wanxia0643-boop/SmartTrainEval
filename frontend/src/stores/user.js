@@ -12,6 +12,10 @@ export const useUserStore = defineStore('user', {
     username: '',
     name: '',
     department: '',
+    email: '',
+    phone: '',
+    orgId: null,
+    studentNo: '',
     initialized: false,
   }),
   getters: {
@@ -30,6 +34,7 @@ export const useUserStore = defineStore('user', {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         token: this.token, role: this.role, userId: this.userId,
         username: this.username, name: this.name, department: this.department,
+        email: this.email, phone: this.phone, orgId: this.orgId, studentNo: this.studentNo,
       }))
     },
     async login(payload) {
@@ -39,7 +44,10 @@ export const useUserStore = defineStore('user', {
       return session
     },
     logout() {
-      this.$patch({ token: '', role: '', userId: null, username: '', name: '', department: '' })
+      this.$patch({
+        token: '', role: '', userId: null, username: '', name: '', department: '',
+        email: '', phone: '', orgId: null, studentNo: '',
+      })
       localStorage.removeItem(STORAGE_KEY)
       resetRoleRoutes()
     },

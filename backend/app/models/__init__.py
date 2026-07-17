@@ -1,6 +1,9 @@
 """ORM 模型集中导出，便于 Base.metadata 收集全部表。"""
 from app.models.achievement import TrainAchievement
 from app.models.base import Base, TimestampMixin
+from app.models.course import Course
+from app.models.course_enrollment import CourseEnrollment
+from app.models.course_folder import CourseFolder
 from app.models.eval_result import EvalResult
 from app.models.indicator import EvalIndicator
 from app.models.llm_log import LlmCallLog
@@ -16,6 +19,8 @@ __all__ = [
     "Role",
     "User",
     "Org",
+    "Course",
+    "CourseEnrollment",
     "TrainProject",
     "TrainAchievement",
     "EvalIndicator",

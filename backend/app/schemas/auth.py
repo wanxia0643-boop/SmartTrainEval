@@ -24,3 +24,27 @@ class CurrentUser(BaseModel):
     username: str
     role_code: str
     real_name: str = ""
+    org_id: int | None = None
+
+
+class UserProfile(BaseModel):
+    """用户完整资料（用于个人中心）。"""
+
+    user_id: int
+    username: str
+    role_code: str
+    real_name: str
+    email: str | None = None
+    phone: str | None = None
+    org_id: int | None = None
+    student_no: str | None = None
+    gender: int = 0
+    avatar: str | None = None
+
+
+class ProfileUpdate(BaseModel):
+    """个人资料更新（仅允许修改的字段）。"""
+
+    real_name: str | None = None
+    email: str | None = None
+    phone: str | None = None

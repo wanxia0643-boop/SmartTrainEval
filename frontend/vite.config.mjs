@@ -8,9 +8,14 @@ export default defineConfig({
     proxy: {
       // 前端 /api/** 代理到后端 /api/v1/**（FastAPI 运行在 8000）
       "/api": {
-        target: "http://127.0.0.1:8000",
+        target: "http://127.0.0.1:8002",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/api/v1"),
+      },
+      // 上传文件静态资源代理
+      "/uploads": {
+        target: "http://127.0.0.1:8002",
+        changeOrigin: true,
       },
     },
   },

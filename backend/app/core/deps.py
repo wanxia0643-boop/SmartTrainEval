@@ -31,6 +31,7 @@ def get_current_user(token: str | None = Depends(oauth2_scheme)) -> CurrentUser:
         username=payload.get("username", ""),
         role_code=payload.get("role_code", ""),
         real_name=payload.get("real_name", ""),
+        org_id=payload.get("org_id"),
     )
 
 

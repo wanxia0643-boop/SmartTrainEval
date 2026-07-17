@@ -30,6 +30,7 @@ class AuthService:
                 "username": user.username,
                 "role_code": role_code,
                 "real_name": user.real_name,
+                "org_id": user.org_id,
             },
         )
 

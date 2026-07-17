@@ -12,9 +12,11 @@ import IntelligentEvaluation from '../views/teacher/IntelligentEvaluation.vue'
 import DataReport from '../views/teacher/DataReport.vue'
 import TrainingReportScreen from '../views/report/TrainingReportScreen.vue'
 import IndicatorManagement from '../views/teacher/IndicatorManagement.vue'
+import CourseManagement from '../views/teacher/CourseManagement.vue'
 import TrainingCenter from '../views/student/TrainingCenter.vue'
 import MyEvaluation from '../views/student/MyEvaluation.vue'
 import GrowthArchive from '../views/student/GrowthArchive.vue'
+import StudentCourseManagement from '../views/student/StudentCourseManagement.vue'
 import ProjectTraining from '../views/enterprise/ProjectTraining.vue'
 import TalentEvaluation from '../views/enterprise/TalentEvaluation.vue'
 import EnterpriseMentor from '../views/enterprise/EnterpriseMentor.vue'
@@ -57,8 +59,16 @@ export const protectedRoutes = [
     meta: { title: '成长档案', icon: CollectionTag, roles: ['student'] },
   },
   {
+    path: 'student-course-management', name: 'student-course-management', component: StudentCourseManagement,
+    meta: { title: '我的课程', icon: Reading, roles: ['student'] },
+  },
+  {
     path: 'training-management', name: 'training-management', component: TrainingManagement,
     meta: { title: '实训管理', icon: FolderChecked, roles: ['teacher', 'admin'] },
+  },
+  {
+    path: 'course-management', name: 'course-management', component: CourseManagement,
+    meta: { title: '课程管理', icon: Reading, roles: ['teacher', 'admin'] },
   },
   {
     path: 'indicator-management', name: 'indicator-management', component: IndicatorManagement,

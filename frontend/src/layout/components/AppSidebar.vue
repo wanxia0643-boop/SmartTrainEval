@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { Menu as MenuIcon } from '@element-plus/icons-vue'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../../stores/app'
 import { usePermissionStore } from '../../stores/permission'
@@ -45,7 +45,8 @@ function handleSidebarControl() {
     </nav>
 
     <button class="collapse-control" type="button" :aria-label="appStore.mobileNavOpen ? '关闭导航菜单' : (collapsed ? '展开侧边栏' : '收起侧边栏')" @click="handleSidebarControl">
-      <el-icon><MenuIcon /></el-icon>
+      <PanelLeftOpen v-if="collapsed" :size="17" aria-hidden="true" />
+      <PanelLeftClose v-else :size="17" aria-hidden="true" />
       <span v-show="!collapsed">收起</span>
     </button>
   </aside>

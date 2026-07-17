@@ -77,8 +77,12 @@ async function download(row) {
   const blob = await downloadReport(row.id)
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
+  const storedExtension = row.file_url?.split('.').pop()?.toLowerCase()
+  const extension = ['xlsx', 'pdf', 'csv'].includes(storedExtension)
+    ? storedExtension
+    : (row.file_format === 'PDF' ? 'pdf' : 'xlsx')
   link.href = url
-  link.download = `${row.report_name || 'report'}.csv`
+  link.download = `${row.report_name || 'report'}.${extension}`
   document.body.appendChild(link)
   link.click()
   link.remove()

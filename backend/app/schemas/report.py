@@ -1,6 +1,6 @@
 """Pydantic schemas for report records."""
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -10,7 +10,7 @@ class ReportBase(BaseModel):
     report_type: int = Field(default=1, description="1-score 2-project 3-org 4-ai usage")
     project_id: int | None = Field(default=None, description="Project ID")
     org_id: int | None = Field(default=None, description="Organization ID")
-    file_format: str = Field(default="EXCEL", max_length=20, description="EXCEL/PDF/WORD")
+    file_format: Literal["EXCEL", "PDF"] = Field(default="EXCEL", description="EXCEL/PDF")
     params: dict[str, Any] | None = Field(default=None, description="Query params snapshot")
 
 

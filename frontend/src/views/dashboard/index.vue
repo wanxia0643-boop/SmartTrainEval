@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { markRaw, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import { ArrowRight, CircleCheck, DocumentChecked, Histogram, Timer, UserFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
@@ -11,6 +11,14 @@ import { listEvalResults } from '../../api/evalResults'
 import { listIndicators } from '../../api/indicators'
 import { listUsers } from '../../api/users'
 import { listRoles } from '../../api/roles'
+
+const metricIcons = {
+  checked: markRaw(DocumentChecked),
+  histogram: markRaw(Histogram),
+  timer: markRaw(Timer),
+  success: markRaw(CircleCheck),
+  user: markRaw(UserFilled),
+}
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -90,25 +98,25 @@ async function loadData() {
   // 角色化指标卡
   if (role === 'student') {
     metrics.value = [
-      { label: '我的成果', value: String(achs.length), unit: '份', delta: `已评价 ${evaluated} 份`, tone: 'primary', icon: DocumentChecked },
-      { label: '平均得分', value: avg == null ? '—' : String(avg), unit: '分', delta: '基于已评成果', tone: 'success', icon: Histogram },
-      { label: '进行中项目', value: String(ongoing), unit: '个', delta: `共 ${projRes.total} 个`, tone: 'warning', icon: Timer },
-      { label: '待反馈', value: String(pending), unit: '份', delta: '提交待评价', tone: 'primary', icon: CircleCheck },
+      { label: '我的成果', value: String(achs.length), unit: '份', delta: `已评价 ${evaluated} 份`, tone: 'primary', icon: metricIcons.checked },
+      { label: '平均得分', value: avg == null ? '—' : String(avg), unit: '分', delta: '基于已评成果', tone: 'success', icon: metricIcons.histogram },
+      { label: '进行中项目', value: String(ongoing), unit: '个', delta: `共 ${projRes.total} 个`, tone: 'warning', icon: metricIcons.timer },
+      { label: '待反馈', value: String(pending), unit: '份', delta: '提交待评价', tone: 'primary', icon: metricIcons.success },
     ]
   } else if (role === 'enterprise') {
     const myScores = evalItems.filter((e) => e.eval_type === 3).length
     metrics.value = [
-      { label: '实训项目', value: String(projRes.total), unit: '个', delta: `进行中 ${ongoing} 个`, tone: 'primary', icon: DocumentChecked },
-      { label: '待评成果', value: String(pending), unit: '份', delta: `共 ${achRes.total} 份`, tone: 'warning', icon: Timer },
-      { label: '已评成果', value: String(evaluated), unit: '份', delta: '完成评价', tone: 'success', icon: CircleCheck },
-      { label: '我的评分', value: String(myScores), unit: '条', delta: '企业侧评价', tone: 'primary', icon: Histogram },
+      { label: '实训项目', value: String(projRes.total), unit: '个', delta: `进行中 ${ongoing} 个`, tone: 'primary', icon: metricIcons.checked },
+      { label: '待评成果', value: String(pending), unit: '份', delta: `共 ${achRes.total} 份`, tone: 'warning', icon: metricIcons.timer },
+      { label: '已评成果', value: String(evaluated), unit: '份', delta: '完成评价', tone: 'success', icon: metricIcons.success },
+      { label: '我的评分', value: String(myScores), unit: '条', delta: '企业侧评价', tone: 'primary', icon: metricIcons.histogram },
     ]
   } else {
     metrics.value = [
-      { label: '在册学生', value: String(studentTotal || '—'), unit: '人', delta: '平台用户', tone: 'primary', icon: UserFilled },
-      { label: '实训项目', value: String(projRes.total), unit: '个', delta: `进行中 ${ongoing} 个`, tone: 'success', icon: DocumentChecked },
-      { label: '实训成果', value: String(achRes.total), unit: '份', delta: `待评 ${pending} 份`, tone: 'warning', icon: Timer },
-      { label: '评价记录', value: String(evalItems.length), unit: '条', delta: '累计评分', tone: 'primary', icon: Histogram },
+      { label: '在册学生', value: String(studentTotal || '—'), unit: '人', delta: '平台用户', tone: 'primary', icon: metricIcons.user },
+      { label: '实训项目', value: String(projRes.total), unit: '个', delta: `进行中 ${ongoing} 个`, tone: 'success', icon: metricIcons.checked },
+      { label: '实训成果', value: String(achRes.total), unit: '份', delta: `待评 ${pending} 份`, tone: 'warning', icon: metricIcons.timer },
+      { label: '评价记录', value: String(evalItems.length), unit: '条', delta: '累计评分', tone: 'primary', icon: metricIcons.histogram },
     ]
   }
 

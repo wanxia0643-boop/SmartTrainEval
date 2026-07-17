@@ -58,12 +58,13 @@ def create_report(
             db,
             report_type=payload.report_type,
             project_id=payload.project_id,
+            file_format=payload.file_format,
             current=current,
         )
         obj = report_service.update(db, obj, {
             "file_url": file_url,
             "status": 1,
-            "remark": "已生成 Excel 兼容 CSV 文件",
+            "remark": f"已生成 {payload.file_format} 文件",
         })
     except Exception as exc:
         obj = report_service.update(db, obj, {
@@ -114,10 +115,15 @@ def download_report(
         raise BusinessException("报表不存在", code=404)
     _ensure_report_access(obj, current)
     path = _report_path(obj.file_url)
+    media_types = {
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".pdf": "application/pdf",
+        ".csv": "text/csv; charset=utf-8",
+    }
     return FileResponse(
         path=str(path),
         filename=path.name,
-        media_type="text/csv; charset=utf-8",
+        media_type=media_types.get(path.suffix.lower(), "application/octet-stream"),
     )
 
 

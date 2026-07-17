@@ -166,7 +166,10 @@ function failXingyun(message) {
   clearTimeout(xingyunReadyTimer)
   xingyunReady.value = false
   xingyunLoading.value = false
-  xingyunError.value = message || '魔珐星云数字人初始化失败'
+  const detail = String(message || '')
+  xingyunError.value = detail.includes('积分不足')
+    ? '魔珐星云积分不足，当前使用备用讲解员'
+    : (detail || '魔珐星云数字人初始化失败')
 }
 
 let renderer

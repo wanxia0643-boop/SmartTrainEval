@@ -11,9 +11,11 @@ from app.utils.logger import logger
 class BusinessException(Exception):
     """业务异常：用于在 service 层抛出可控的业务错误。"""
 
-    def __init__(self, msg: str, code: int = 1, http_status: int = status.HTTP_200_OK):
+    def __init__(self, msg: str, code: int = 1, http_status: int | None = None):
         self.msg = msg
         self.code = code
+        if http_status is None:
+            http_status = code if status.HTTP_400_BAD_REQUEST <= code <= 599 else status.HTTP_200_OK
         self.http_status = http_status
         super().__init__(msg)
 
